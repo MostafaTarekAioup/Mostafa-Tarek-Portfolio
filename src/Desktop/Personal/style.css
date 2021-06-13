@@ -1,0 +1,371 @@
+.personal-content {
+  width: 90vw;
+  max-width: 1200px;
+  text-align: center;
+  margin: auto;
+  /* background-color: rgb(255, 254, 254); */
+}
+.introduce-container {
+  width: 100%;
+  height: 500px;
+  text-align: center;
+  margin: auto;
+  background-image: url(../../Images/ApoutMe.webp);
+  background-repeat: no-repeat;
+  background-size: cover;
+  object-fit: cover;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  gap: 2px;
+  font-family: 'Pacifico', cursive;
+  border-radius: 5px;
+}
+.introduce-container h2 {
+  font-family: 'Pacifico', cursive;
+  font-size: 60px;
+  font-weight: 400;
+  color: rgb(255, 255, 255);
+  text-transform: capitalize;
+  text-shadow: black 1px 1px;
+}
+.introduce-container h3 {
+  font-family: 'Pacifico', cursive;
+  font-size: 40px;
+  font-weight: 400;
+  color: rgb(255, 255, 255);
+  text-transform: capitalize;
+  text-shadow: black 1px 1px;
+}
+.information {
+  margin-top: -120px;
+  line-height: 70px;
+}
+.jop-wrapper {
+  width: 100%;
+  text-align: center;
+  margin: auto;
+}
+.jop {
+  font-size: 35px;
+  font-weight: bold;
+  position: absolute;
+  opacity: 0;
+  text-transform: capitalize;
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+  text-shadow: black 1px 1px;
+  left: 0px;
+}
+.j1 {
+  animation: wrapp1 15s infinite;
+}
+.j2 {
+  animation: wrapp2 15s infinite;
+}
+.j3 {
+  animation: wrapp3 15s infinite;
+}
+.j4 {
+  animation: wrapp4 15s infinite;
+}
+@keyframes wrapp1 {
+  0% {
+    opacity: 0;
+  }
+  12.5% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0;
+  }
+}
+@keyframes wrapp2 {
+  25% {
+    opacity: 0;
+  }
+  37.5% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes wrapp3 {
+  50% {
+    opacity: 0;
+  }
+  62.5% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0;
+  }
+}
+@keyframes wrapp4 {
+  75% {
+    opacity: 0;
+  }
+  87.5% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* /////////////////// End of Introduction  */
+
+/* //////////////////// Start of Apout Me */
+
+.apout-me-header {
+  text-transform: capitalize;
+  width: 100%;
+  padding: 5px;
+  position: relative;
+}
+.apout-me-header h2 {
+  font-size: 60px;
+  color: white;
+  text-transform: capitalize;
+  font-family: 'Pacifico', cursive;
+  font-weight: 400;
+}
+
+.apout-me-container {
+  width: 100%;
+  display: block;
+  text-align: center;
+  /* position: relative; */
+  align-items: center;
+  border-radius: 15px;
+  background-color: #1e1e2f;
+  padding: 10px;
+}
+.personal-image-container {
+  width: 100%;
+  align-items: center;
+  display: grid;
+  justify-content: center;
+  position: relative;
+}
+.myImage {
+  object-fit: cover;
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  margin: 0;
+  margin-top: -50px;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+.myImage::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 210px;
+  height: 210px;
+  background-color: rgb(51, 50, 50);
+  left: -5px;
+  border-radius: 50%;
+  top: -5px;
+}
+.myImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.myPersonalInfo {
+  color: rgb(255, 255, 255);
+  margin-top: 50px;
+}
+.fullName h2 {
+  font-size: 35px;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+.fullName h3 {
+  font-size: 20px;
+  font-weight: 400;
+  text-transform: capitalize;
+}
+.fullName p {
+  line-height: 30px;
+  font-size: 18px;
+}
+.moreDetails {
+  width: 100%;
+  /* padding: 10px; */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+.bio-details {
+  height: 0px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+.show-bio {
+  display: flex;
+  width: 100px;
+  padding: 5px;
+  margin: auto;
+  align-items: center;
+  justify-content: center;
+  background-color: #0099ff;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+.arrow {
+  margin-left: 5px;
+}
+.show-bio:hover {
+  background-color: #0b8ee6;
+  cursor: pointer;
+}
+.active-bio {
+  height: 100px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+.moreDetails p {
+  display: flex;
+  align-items: center;
+  line-height: 35px;
+}
+.detailsIcon {
+  margin-right: 5px;
+  color: #0099ff;
+}
+.biography p {
+  background-color: #27293d;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+/* /////////////////////////////////////// */
+.more-info {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  /* justify-content: center; */
+  width: 100%;
+  margin-top: 10px;
+}
+.more-info h3 {
+  font-family: 'Pattaya', sans-serif;
+  font-size: 25px;
+  color: white;
+}
+.infoline {
+  height: 2px;
+  background-color: #a5adb3;
+  margin-left: 5px;
+}
+
+/* ///////////////////////////// */
+.time-line-container {
+  max-width: 800px;
+  margin: auto;
+  margin-top: 20px;
+  border-left: 2px #27293d solid;
+  position: relative;
+  color: white;
+  text-align: left;
+}
+.course {
+  width: 80%;
+  background-color: #27293d;
+  margin: auto;
+  margin-top: 50px;
+  text-align: left;
+  padding: 15px;
+  border-radius: 5px;
+}
+.course h3 {
+  margin-bottom: 10px;
+  background-color: #0099ff;
+  display: inline-block;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.course h4 {
+  color: #0099ff;
+}
+
+.course-icon {
+  position: absolute;
+  left: -15px;
+  font-size: 30px;
+}
+.certificate {
+  text-decoration: none;
+  color: tomato;
+}
+.cv-download {
+  width: 100%;
+  /* background-color: tomato; */
+  padding: 20px;
+  text-align: center;
+}
+.cv-button {
+  padding: 10px;
+  text-transform: capitalize;
+  background-color: #0099ff;
+  border-color: transparent;
+  color: white;
+  font-size: large;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.cv-button:hover {
+  background-color: #004e83;
+  /* color: #0099ff; */
+}
+/* //////////////////////////// Start of Responsive */
+@media only screen and (min-width: 1500px) {
+  .introduce-container h2 {
+    font-size: 90px;
+  }
+  .introduce-container h3 {
+    font-size: 60px;
+  }
+  .jop {
+    font-size: 50px;
+  }
+}
+
+@media only screen and (max-width: 720px) {
+  .myPersonalInfo {
+    width: 100%;
+    margin-left: 0px;
+    padding-left: 0px;
+  }
+  .moreDetails {
+    grid-template-columns: 1fr;
+  }
+  .personal-content {
+    width: 100vw;
+  }
+  .active-bio {
+    height: 300px;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+  }
+  .time-line-container {
+    margin-left: 30px;
+  }
+  .course {
+    width: 90%;
+  }
+}

@@ -1,0 +1,200 @@
+footer {
+  position: fixed;
+  width: 100vw;
+  z-index: 96;
+  /* height: 50px; */
+  background-color: rgba(10, 8, 8, 0.938);
+  bottom: -1px;
+}
+.icon-btn {
+  background-color: inherit;
+  border-color: transparent;
+  width: 48px;
+  height: 48px;
+  outline-color: transparent;
+  text-decoration: none;
+}
+.icon {
+  font-size: 20px;
+  color: white;
+}
+.icon:hover {
+  color: rgb(45, 122, 185);
+  cursor: pointer;
+}
+.icon-btn:hover {
+  background-color: rgba(43, 37, 37, 0.678);
+  cursor: pointer;
+}
+.desktop-background {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  object-fit: cover;
+}
+.desktop-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.icon-btn img {
+  width: 80%;
+  height: 80%;
+}
+.not-active-icon {
+  transform: scale(0);
+  transition: all 0.4s ease-in-out;
+}
+.active-icon {
+  background-color: rgba(58, 57, 57, 0.678);
+}
+
+/* all icons container style  */
+
+.allicon-container {
+  position: absolute;
+  height: calc(100vh - 50px);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  left: 10px;
+  top: 0;
+  text-align: center;
+}
+
+.single-icon {
+  width: 100px;
+  /* height: 100px; */
+  margin-top: 10px;
+  border-radius: 5px;
+  padding: 10px;
+  text-align: center;
+  /* background-color: tomato; */
+  cursor: pointer;
+}
+.single-icon button {
+  border-color: transparent;
+  background-color: transparent;
+  width: 100%;
+  outline-color: transparent;
+  cursor: pointer;
+}
+.single-icon button:focus {
+  outline: 0;
+}
+.navagation-icons button:focus {
+  outline: 0;
+}
+.single-icon img {
+  width: 80%;
+  height: 80%;
+  cursor: pointer;
+}
+.single-icon p {
+  text-transform: capitalize;
+  font-weight: 700;
+  color: rgb(90, 88, 88);
+  font-size: 13px;
+  cursor: pointer;
+  /* text-shadow: 2px 2px rgb(59, 59, 59); */
+  /* letter-spacing: 2px; */
+}
+.single-icon:hover {
+  background-color: rgba(112, 182, 247, 0.459);
+  cursor: pointer;
+}
+
+.navagation-icons {
+  display: flex;
+  align-items: center;
+}
+
+/* portfoloi component style  */
+
+.window-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 8, 8, 0.959);
+  position: absolute;
+  z-index: 80;
+  text-align: center;
+  visibility: hidden;
+  transform: scale(0);
+
+  overflow: scroll;
+  overflow-x: hidden;
+  opacity: 0;
+}
+.active {
+  visibility: visible;
+  transform: scale(1);
+  opacity: 1;
+  transition: all 0.4s ease-out;
+}
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  height: 48px;
+  background-color: rgb(26, 24, 24);
+  align-items: center;
+}
+.headerbuttons {
+  position: fixed;
+  right: 10px;
+  top: 5px;
+  /* width: 120px; */
+}
+.content {
+  max-width: 1300px;
+  margin: auto;
+}
+.heder-icon {
+  border-color: transparent;
+  width: 48px;
+  height: 48px;
+  background-color: transparent;
+  color: white;
+}
+.heder-icon:hover {
+  color: tomato;
+  cursor: pointer;
+}
+
+/* /////////////////////////// */
+
+/* responsive DeskTop */
+
+@media only screen and (max-width: 500px) {
+  .sidebar-container {
+    width: 100%;
+    height: 100%;
+    bottom: 0;
+  }
+  .icon-btn {
+    display: none;
+  }
+  .main-icon {
+    display: block;
+  }
+
+  /* ////////////////// sidebar  */
+}
+
+@media only screen and (max-width: 300px) {
+  .userDetails h4 {
+    letter-spacing: 0px;
+    font-size: 18px;
+    font-weight: 400;
+  }
+  .userDetails h5 {
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 400;
+  }
+  .allicon-container {
+    display: flex;
+    flex-direction: row;
+    align-content: flex-start;
+  }
+}

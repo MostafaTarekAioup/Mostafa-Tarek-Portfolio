@@ -1,0 +1,43 @@
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: rgba(10, 8, 8, 0.89);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(15, 121, 243);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(0, 0, 0);
+}
+@media only screen and (max-width: 500px) {
+  /* width */
+  ::-webkit-scrollbar {
+    width: 1px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: rgba(10, 8, 8, 0.89);
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: rgb(15, 121, 243);
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(0, 0, 0);
+  }
+}
+button:focus {
+  outline: 0;
+}

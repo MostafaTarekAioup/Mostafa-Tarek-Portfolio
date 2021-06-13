@@ -1,0 +1,29 @@
+.skills-window {
+  background-color: #1e1e2f !important;
+}
+.course-detail {
+  display: flex;
+  justify-content: space-between;
+}
+.skill-flag {
+  text-transform: capitalize;
+  display: inline-block;
+  background-color: #0099ff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-left: 30px;
+  position: relative;
+  margin-top: 20px;
+}
+.skill-flag::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  color: tomato;
+  left: -10px;
+  top: 20%;
+  z-index: -1;
+  background-color: #0099ff;
+  transform: rotate(45deg);
+}

@@ -1,0 +1,21 @@
+.leaflet-container {
+  width: 100%;
+  margin: auto;
+  height: 60vh;
+  border-radius: 5px;
+}
+.popubImage {
+  width: 100%;
+  object-fit: cover;
+  height: 100%;
+  border-radius: 5px;
+}
+.popup-image-container {
+  width: 150px;
+  height: 100px;
+}
+@media only screen and (min-width: 1500px) {
+  .leaflet-container {
+    margin-top: 100px;
+  }
+}

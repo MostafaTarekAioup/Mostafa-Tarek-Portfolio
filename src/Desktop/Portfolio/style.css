@@ -1,0 +1,76 @@
+.portfolio-container {
+  width: 100%;
+}
+.portfolio-header {
+  margin-top: 50px;
+  position: relative;
+}
+.portfolio-header h2 {
+  color: white;
+  font-family: 'Pacifico', cursive;
+  font-size: 70px;
+  font-weight: 300;
+  /* text-transform: uppercase; */
+}
+.waves {
+  position: absolute;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  z-index: -1;
+}
+
+.content {
+  width: 90vw;
+  max-width: 1200px;
+  display: grid;
+  margin: 0px auto 2rem;
+  gap: 3rem 2rem;
+  margin-bottom: 60px;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+.project {
+  object-fit: cover;
+  background-color: white;
+  border-radius: 5px;
+  overflow: hidden;
+  height: 250px;
+  position: relative;
+}
+.project img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#project-id {
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  text-align: center;
+  background-color: rgba(196, 184, 184, 0.829);
+}
+#project-id p {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  text-transform: capitalize;
+  letter-spacing: 1px;
+  font-size: 18px;
+  font-weight: 500;
+  color: rgb(32, 28, 28);
+}
+.project-container {
+  transition: 0.5s ease-in-out;
+}
+.project-container:hover {
+  transform: scale(1.07);
+}
+
+@media only screen and (max-width: 300px) {
+  .content {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
