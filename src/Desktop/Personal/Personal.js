@@ -60,7 +60,7 @@ const Personal = () => {
            <p><FaAngleDoubleRight className='detailsIcon'/> Birthday : 11 / 11 /1996</p>
            <p> <FaAngleDoubleRight className='detailsIcon'/> Age : 24</p>
            <p> <FaAngleDoubleRight className='detailsIcon'/> Degree : Computer Science</p>
-           <p> <FaAngleDoubleRight className='detailsIcon'/> Phone : 01060393765</p>
+           <p> <FaAngleDoubleRight className='detailsIcon'/> Phone : 01094855028</p>
            <p> <FaAngleDoubleRight className='detailsIcon'/> Experience : 1 Year</p>
            <p> <FaAngleDoubleRight className='detailsIcon'/> Graduation year : 8 / 2020</p>
            <p> <FaAngleDoubleRight className='detailsIcon'/> Military Service: exempt</p>

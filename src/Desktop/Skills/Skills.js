@@ -1,7 +1,7 @@
 import React from 'react'
 import {useGlopalContext} from '../../Context'
 import { FaRegWindowRestore , FaTimes , FaAngleDoubleRight  , FaBootstrap , FaJsSquare , FaHtml5 , FaCss3Alt ,FaGithubSquare , FaReact , FaMapMarkedAlt , FaComments , FaRunning , FaUsers , FaUserCog , FaLanguage} from "react-icons/fa";
-
+import { SiRedux , SiSass } from "react-icons/si";
 import './style.css'
 const Skills = () => {
  const {isSkillsActive ,setIsSkillsActive ,taskparicons , setTaskparicons} = useGlopalContext()
@@ -172,6 +172,29 @@ const Skills = () => {
             <div className="moreDetails">
            <p><FaAngleDoubleRight className='detailsIcon'/> Mapbox Documintation</p>
            <p><FaAngleDoubleRight className='detailsIcon'/> Leaflet.js Documintation</p>
+         </div>
+          </div>
+
+          <div className=" course first-course">
+            <div className="  course-icon"><SiRedux/></div>
+            <div className="course-detail">
+             <h3>Redux & Redux-ToolKite</h3>
+            </div>
+            <h4 >Sourses</h4>
+            <div className="moreDetails">
+           <p><FaAngleDoubleRight className='detailsIcon'/> Udemy : Maximilian Schwarzmüller Course</p>
+           <p><FaAngleDoubleRight className='detailsIcon'/> Udemy : John Smilga Course</p>
+         </div>
+          </div>
+
+          <div className=" course first-course">
+            <div className="  course-icon"><SiSass/></div>
+            <div className="course-detail">
+             <h3>Sass</h3>
+            </div>
+            <h4 >Sourses</h4>
+            <div className="moreDetails">
+           <p><FaAngleDoubleRight className='detailsIcon'/> Elzero Web School : Sass Course</p>
          </div>
           </div>
 

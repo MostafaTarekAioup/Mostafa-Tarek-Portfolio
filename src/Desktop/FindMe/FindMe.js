@@ -37,7 +37,7 @@ const FindMe = () => {
      <svg className="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#0099ff" fillOpacity="1" d="M0,32L60,48C120,64,240,96,360,106.7C480,117,600,107,720,90.7C840,75,960,53,1080,53.3C1200,53,1320,75,1380,85.3L1440,96L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"></path></svg>
     </div>
      <div className="map-container">
-          <MapContainer center={[30.044420, 31.235712]} zoom={10} scrollWheelZoom={true}>
+          <MapContainer center={[30.044420, 31.235712]} zoom={9} scrollWheelZoom={true}>
      <LayersControl position="topright">
       <LayersControl.BaseLayer checked name="Open Street Map">
         <TileLayer
@@ -54,7 +54,6 @@ const FindMe = () => {
     </LayersControl>
     
    <Circle center={[30.044420, 31.235712]} pathOptions={fillBlueOptions} radius={20000} />
-   <Circle center={[30.4748187, 31.4994567]} pathOptions={redOptions} radius={300} />
    <Circle center={[30.5852132,31.4994808]} pathOptions={fillBlueOptions} radius={10000} />
    <Circle center={[30.3062216,31.742574]} pathOptions={fillBlueOptions} radius={10000} />
       <Marker position={[30.044420, 31.235712]}>
@@ -75,17 +74,13 @@ const FindMe = () => {
       </Marker>
       <Marker position={[30.3062216,31.742574]}>
       <Popup>
-        I can work in 10'th of Ramadan <br/><br/>
+        I Live Here <br/><br/>
         <div className="popup-image-container">
           <img className='popubImage' src="https://media.gemini.media/img/large/2019/10/16/2019_10_16_9_29_39_560.jpg"  alt="Zagazig" /> 
         </div>
       </Popup>
       </Marker>
-      <Marker position={[30.4748187, 31.4994567]}>
-      <Popup>
-        Here I Live
-      </Popup>
-      </Marker>
+      
 
     <Fullscreen
         eventHandlers={{

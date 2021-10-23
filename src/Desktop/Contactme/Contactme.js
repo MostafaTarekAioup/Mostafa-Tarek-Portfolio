@@ -50,7 +50,7 @@ const Contactme = () => {
       <div className="contact-data-container">
         <div className="emailphone">
            <p className='single-detail-item'><FaRegEnvelope className='detailsIcon '/> mostafatarekaioup@gmail.com</p>
-           <p className='single-detail-item'> <FaPhoneAlt className='detailsIcon'/> +201060393765</p> 
+           <p className='single-detail-item'> <FaPhoneAlt className='detailsIcon'/> +201094855028</p> 
         </div>
         <div className="more-info">
           <h3 className='contact-line'>Social Media</h3>
