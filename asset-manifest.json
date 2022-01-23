@@ -1,0 +1,41 @@
+{
+  "files": {
+    "main.css": "/Mostafa-Tarek-Portfolio/static/css/main.918e023c.chunk.css",
+    "main.js": "/Mostafa-Tarek-Portfolio/static/js/main.2d977dce.chunk.js",
+    "main.js.map": "/Mostafa-Tarek-Portfolio/static/js/main.2d977dce.chunk.js.map",
+    "runtime-main.js": "/Mostafa-Tarek-Portfolio/static/js/runtime-main.e448cca6.js",
+    "runtime-main.js.map": "/Mostafa-Tarek-Portfolio/static/js/runtime-main.e448cca6.js.map",
+    "static/css/2.7a1dfca8.chunk.css": "/Mostafa-Tarek-Portfolio/static/css/2.7a1dfca8.chunk.css",
+    "static/js/2.77db6baf.chunk.js": "/Mostafa-Tarek-Portfolio/static/js/2.77db6baf.chunk.js",
+    "static/js/2.77db6baf.chunk.js.map": "/Mostafa-Tarek-Portfolio/static/js/2.77db6baf.chunk.js.map",
+    "static/js/3.829af1ca.chunk.js": "/Mostafa-Tarek-Portfolio/static/js/3.829af1ca.chunk.js",
+    "static/js/3.829af1ca.chunk.js.map": "/Mostafa-Tarek-Portfolio/static/js/3.829af1ca.chunk.js.map",
+    "index.html": "/Mostafa-Tarek-Portfolio/index.html",
+    "static/css/2.7a1dfca8.chunk.css.map": "/Mostafa-Tarek-Portfolio/static/css/2.7a1dfca8.chunk.css.map",
+    "static/css/main.918e023c.chunk.css.map": "/Mostafa-Tarek-Portfolio/static/css/main.918e023c.chunk.css.map",
+    "static/js/2.77db6baf.chunk.js.LICENSE.txt": "/Mostafa-Tarek-Portfolio/static/js/2.77db6baf.chunk.js.LICENSE.txt",
+    "static/media/style.css": "/Mostafa-Tarek-Portfolio/static/media/ApoutMe.6ef654ed.webp",
+    "static/media/Mostafa Tarek_Aioup_CV.30af61f2.pdf": "/Mostafa-Tarek-Portfolio/static/media/Mostafa Tarek_Aioup_CV.30af61f2.pdf",
+    "static/media/MyPersonalImage.3e794c05.webp": "/Mostafa-Tarek-Portfolio/static/media/MyPersonalImage.3e794c05.webp",
+    "static/media/Skillssubmenu.fe64e273.webp": "/Mostafa-Tarek-Portfolio/static/media/Skillssubmenu.fe64e273.webp",
+    "static/media/background-img.690cb960.webp": "/Mostafa-Tarek-Portfolio/static/media/background-img.690cb960.webp",
+    "static/media/contacrme.0aea53dd.svg": "/Mostafa-Tarek-Portfolio/static/media/contacrme.0aea53dd.svg",
+    "static/media/contactmesupmenu.46966260.webp": "/Mostafa-Tarek-Portfolio/static/media/contactmesupmenu.46966260.webp",
+    "static/media/desktop-background.c7196e64.webp": "/Mostafa-Tarek-Portfolio/static/media/desktop-background.c7196e64.webp",
+    "static/media/findmesubmenu.62e30488.webp": "/Mostafa-Tarek-Portfolio/static/media/findmesubmenu.62e30488.webp",
+    "static/media/login-img.afa19b23.webp": "/Mostafa-Tarek-Portfolio/static/media/login-img.afa19b23.webp",
+    "static/media/map-icon.064480cc.svg": "/Mostafa-Tarek-Portfolio/static/media/map-icon.064480cc.svg",
+    "static/media/personalinfo-icon.9440fdb2.svg": "/Mostafa-Tarek-Portfolio/static/media/personalinfo-icon.9440fdb2.svg",
+    "static/media/pesonalsubmenuImage.71b39f90.webp": "/Mostafa-Tarek-Portfolio/static/media/pesonalsubmenuImage.71b39f90.webp",
+    "static/media/portfolio-icon.31a21d70.svg": "/Mostafa-Tarek-Portfolio/static/media/portfolio-icon.31a21d70.svg",
+    "static/media/portfolio-submenu.84eb50e2.webp": "/Mostafa-Tarek-Portfolio/static/media/portfolio-submenu.84eb50e2.webp",
+    "static/media/skills.957a1f5e.svg": "/Mostafa-Tarek-Portfolio/static/media/skills.957a1f5e.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.e448cca6.js",
+    "static/css/2.7a1dfca8.chunk.css",
+    "static/js/2.77db6baf.chunk.js",
+    "static/css/main.918e023c.chunk.css",
+    "static/js/main.2d977dce.chunk.js"
+  ]
+}
