@@ -1,5 +1,5 @@
 {
-  "homepage":"https://mostafatarekaioup.github.io/Mostafa-Tarek-Portfolio",
+  "homepage": "https://mostafatarekaioup.github.io/Mostafa-Tarek-Portfolio",
   "name": "project-portfolio",
   "version": "0.1.0",
   "private": true,
@@ -7,7 +7,6 @@
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.3",
-    "gh-pages": "^3.2.3",
     "leaflet": "^1.7.1",
     "leaflet-fullscreen": "^1.0.2",
     "mapbox-gl": "^2.3.0",
@@ -21,8 +20,8 @@
     "web-vitals": "^1.1.1"
   },
   "scripts": {
-    "predeploy":"npm run build",
-    "deploy":"gh-pages -d build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -40,6 +39,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@types/leaflet": "^1.7.0"
+    "@types/leaflet": "^1.7.0",
+    "gh-pages": "^3.2.3"
   }
 }
