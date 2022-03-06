@@ -1,0 +1,46 @@
+.filter_container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  padding: 1rem;
+  margin: 2.5rem auto;
+  gap: 10px;
+}
+.filter_btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  gap: 10px;
+  color: white;
+  background-color: transparent;
+  background-color: rgb(15, 121, 243);
+  padding: 5px 10px;
+  border-color: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all linear 0.3s;
+  text-transform: capitalize;
+}
+.filter_btn:hover {
+  background-color: rgb(3, 59, 122);
+}
+.filter_btn_details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  gap: 10px;
+}
+.filter_msg {
+  font-size: 2rem;
+  color: white;
+  text-transform: capitalize;
+  text-shadow: 1px 1px 15px white;
+}
