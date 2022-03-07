@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React from "react"
 import "./filters.style.css"
 import SingleFilter from "./SingleFilter"
 import { useGlopalContext } from "../../../Context"

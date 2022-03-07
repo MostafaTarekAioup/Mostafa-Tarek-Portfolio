@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { FaCheck } from "react-icons/fa"
 import "./filters.style.css"
 import { useGlopalContext } from "../../../Context"
@@ -8,13 +8,16 @@ const SingleFilter = ({ tag }) => {
   const filterHandller = (tag) => {
     setIsChecked(!isChecked)
     let tempTags = selectedTags
-    if (tempTags.find((item) => item === tag)) {
+    let foundTag = tempTags.find((item) => item === tag)
+    if (foundTag) {
       tempTags = tempTags.filter((currtag) => currtag !== tag)
       setSelectedTags(tempTags)
-    } else {
+    }
+    if (!foundTag) {
       tempTags.push(tag)
       setSelectedTags(tempTags)
     }
+    filtringData()
   }
 
   return (

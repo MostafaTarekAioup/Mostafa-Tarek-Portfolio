@@ -159,7 +159,6 @@ const AppProvider = ({ children }) => {
   //    setIsLoading(false)
   //  },3000)
   // },[])
-
   /// fetch all tags
 
   data.map((project) => {
@@ -169,7 +168,7 @@ const AppProvider = ({ children }) => {
 
   uniqueTages = [...new Set(allProjectsTags)]
 
-  const filtringData = () => {
+  let filtringData = () => {
     let tempData = data
     tempData = tempData.filter((project) => {
       return selectedTags.every((tag) => project.tags.includes(tag))

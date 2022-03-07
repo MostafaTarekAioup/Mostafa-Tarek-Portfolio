@@ -9,7 +9,6 @@ const Portfolio = () => {
     isPortfolioActive,
     taskparicons,
     setTaskparicons,
-    data,
     filtredData,
   } = useGlopalContext()
   const closePortfoliolWindow = () => {
