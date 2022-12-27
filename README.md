@@ -4,7 +4,7 @@ Hi I'm Mostafa Tarek and this is my Portfolio Project made with React framework
 
 ## Live Preview
 
-https://mostafa-tarek-portfolio.netlify.app/
+https://mostafa-tarek-portfolio.vercel.app/
 
 ### To run this project
 
