@@ -13,9 +13,11 @@ model Project {
   imgUrl    String
   liveLink  String
   tags      String   // JSON array of strings e.g. '["react", "training"]'
-  tools     String   @default("[]") // JSON array of strings e.g. '["react", "jsx"]'
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tools       String   @default("[]") // JSON array of strings e.g. '["react", "jsx"]'
+  description String   @default("")
+  images      String   @default("[]") // JSON array of image strings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Skill {

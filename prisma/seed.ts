@@ -315,6 +315,7 @@ async function main() {
   ];
 
   for (const proj of projectsData) {
+    const defaultDesc = `Professional ${proj.title} web application built with ${proj.tools.slice(0, 3).join(", ")}. Features modern interactive UI, responsive layout, and optimized performance.`;
     await prisma.project.create({
       data: {
         id: proj.id,
@@ -323,6 +324,8 @@ async function main() {
         liveLink: proj.liveLink,
         tags: JSON.stringify(proj.tags),
         tools: JSON.stringify(proj.tools),
+        description: defaultDesc,
+        images: JSON.stringify([proj.imgUrl, proj.imgUrl]),
       },
     });
   }

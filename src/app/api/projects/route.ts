@@ -26,10 +26,12 @@ export async function POST(request: Request) {
       data: {
         id,
         title: body.title,
-        imgUrl: body.imgUrl || "https://i.ibb.co/CPrHNtZ/b1.webp",
+        imgUrl: body.imgUrl || (Array.isArray(body.images) && body.images[0]) || "https://i.ibb.co/CPrHNtZ/b1.webp",
         liveLink: body.liveLink || "#",
         tags: typeof body.tags === "string" ? body.tags : JSON.stringify(body.tags || ["react"]),
         tools: typeof body.tools === "string" ? body.tools : JSON.stringify(body.tools || []),
+        description: body.description || "",
+        images: typeof body.images === "string" ? body.images : JSON.stringify(body.images || [body.imgUrl || "https://i.ibb.co/CPrHNtZ/b1.webp"]),
       },
     });
     return NextResponse.json(project, { status: 201 });
@@ -52,6 +54,8 @@ export async function PUT(request: Request) {
         ...data,
         tags: data.tags ? (typeof data.tags === "string" ? data.tags : JSON.stringify(data.tags)) : undefined,
         tools: data.tools ? (typeof data.tools === "string" ? data.tools : JSON.stringify(data.tools)) : undefined,
+        description: data.description !== undefined ? data.description : undefined,
+        images: data.images ? (typeof data.images === "string" ? data.images : JSON.stringify(data.images)) : undefined,
       },
     });
     return NextResponse.json(project);

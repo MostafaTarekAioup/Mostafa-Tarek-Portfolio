@@ -82,6 +82,8 @@ export const ProjectScalarFieldEnum = {
   liveLink: 'liveLink',
   tags: 'tags',
   tools: 'tools',
+  description: 'description',
+  images: 'images',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useOS } from "@/context/OSContext";
 import {
   ShieldCheck,
@@ -15,6 +16,8 @@ import {
   CheckCircle2,
   Loader2,
   Lock,
+  UploadCloud,
+  Image as ImageIcon,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -34,7 +37,19 @@ interface Project {
   liveLink: string;
   tags: string;
   tools?: string;
+  description?: string;
+  images?: string;
 }
+
+const tryParseJsonArray = (str?: string): string[] => {
+  if (!str) return [];
+  try {
+    const res = JSON.parse(str);
+    return Array.isArray(res) ? res : [str];
+  } catch {
+    return [str];
+  }
+};
 
 export function AdminWindow() {
   const { isAdminMode, setIsAdminMode } = useOS();
@@ -52,10 +67,75 @@ export function AdminWindow() {
   // Modals / Form state
   const [editingSkill, setEditingSkill] = useState<Partial<Skill> | null>(null);
   const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadingFiles, setUploadingFiles] = useState<boolean>(false);
 
   const showNotification = (msg: string) => {
     setNotify(msg);
     setTimeout(() => setNotify(null), 3500);
+  };
+
+  const handleCloudinaryUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingFiles(true);
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "mostafaaiopu";
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "myPreset1";
+
+    const currentImages: string[] = editingProject?.images
+      ? (typeof editingProject.images === "string" ? tryParseJsonArray(editingProject.images) : editingProject.images)
+      : (editingProject?.imgUrl ? [editingProject.imgUrl] : []);
+
+    const uploadedUrls: string[] = [];
+    const totalFiles = files.length;
+
+    for (let i = 0; i < totalFiles; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      try {
+        setUploadProgress(Math.round((i / totalFiles) * 100));
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, true);
+        
+        const url = await new Promise<string>((resolve, reject) => {
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const filePercent = (e.loaded / e.total) * (100 / totalFiles);
+              setUploadProgress(Math.min(99, Math.round(((i / totalFiles) * 100) + filePercent)));
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              const res = JSON.parse(xhr.responseText);
+              resolve(res.secure_url || res.url);
+            } else {
+              reject("Upload failed");
+            }
+          };
+          xhr.onerror = () => reject("Network error");
+          xhr.send(formData);
+        });
+
+        uploadedUrls.push(url);
+      } catch (err) {
+        console.error("Cloudinary upload error:", err);
+        showNotification("Failed to upload image to Cloudinary!");
+      }
+    }
+
+    setUploadProgress(null);
+    setUploadingFiles(false);
+    if (uploadedUrls.length > 0) {
+      const newImages = [...currentImages, ...uploadedUrls];
+      setEditingProject((prev) => prev ? ({
+        ...prev,
+        images: JSON.stringify(newImages),
+        imgUrl: prev.imgUrl || newImages[0],
+      }) : null);
+      showNotification(`Uploaded ${uploadedUrls.length} image(s) successfully!`);
+    }
   };
 
   const loadData = async () => {
@@ -208,6 +288,10 @@ export function AdminWindow() {
       tools: typeof editingProject.tools === "string"
         ? editingProject.tools.split(",").map((t: string) => t.trim())
         : editingProject.tools || [],
+      description: editingProject.description || "",
+      images: typeof editingProject.images === "string"
+        ? tryParseJsonArray(editingProject.images)
+        : editingProject.images || (editingProject.imgUrl ? [editingProject.imgUrl] : []),
     };
 
     try {
@@ -585,179 +669,302 @@ export function AdminWindow() {
       )}
 
       {/* SKILL MODAL */}
-      {editingSkill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl relative">
-            <button onClick={() => setEditingSkill(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-sm font-bold text-white mb-4">
-              {editingSkill.id ? `Edit Skill #${editingSkill.id}` : "Add New Tech Skill"}
-            </h3>
-
-            <form onSubmit={handleSaveSkill} className="space-y-3">
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Skill Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingSkill.title || ""}
-                  onChange={(e) => setEditingSkill({ ...editingSkill, title: e.target.value })}
-                  placeholder="e.g. Next.js 15, Prisma ORM"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
+      {editingSkill && typeof window !== "undefined" && document.body && createPortal(
+        <div
+          onClick={() => setEditingSkill(null)}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-fadeIn overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900/95 border border-emerald-500/40 rounded-2xl w-full max-w-md shadow-2xl shadow-emerald-500/10 flex flex-col max-h-[85vh] my-auto relative overflow-hidden"
+          >
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <h3 className="text-sm sm:text-base font-extrabold text-white">
+                  {editingSkill.id ? `Edit Skill #${editingSkill.id}` : "Add New Tech Skill"}
+                </h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setEditingSkill(null)}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/80 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
+
+            {/* Form Body - Scrollable */}
+            <form onSubmit={handleSaveSkill} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-5 space-y-3.5 overflow-y-auto flex-1 max-h-[calc(85vh-130px)] no-scrollbar">
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Category</label>
-                  <select
-                    value={editingSkill.category || "Frontend"}
-                    onChange={(e) => setEditingSkill({ ...editingSkill, category: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                  >
-                    <option value="Frontend">Frontend</option>
-                    <option value="Backend">Backend</option>
-                    <option value="Tools & OS">Tools & OS</option>
-                    <option value="Design">Design</option>
-                  </select>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Skill Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingSkill.title || ""}
+                    onChange={(e) => setEditingSkill({ ...editingSkill, title: e.target.value })}
+                    placeholder="e.g. Next.js 15, Prisma ORM"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-300 mb-1 font-semibold">Category</label>
+                    <select
+                      value={editingSkill.category || "Frontend"}
+                      onChange={(e) => setEditingSkill({ ...editingSkill, category: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    >
+                      <option value="Frontend">Frontend</option>
+                      <option value="Backend">Backend</option>
+                      <option value="Tools & OS">Tools & OS</option>
+                      <option value="Design">Design</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-300 mb-1 font-semibold">Proficiency % (1-100)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={editingSkill.proficiency || 80}
+                      onChange={(e) => setEditingSkill({ ...editingSkill, proficiency: Number(e.target.value) })}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-300 mb-1">Proficiency % (0-100)</label>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Acquisition Date</label>
                   <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={editingSkill.proficiency || 80}
-                    onChange={(e) => setEditingSkill({ ...editingSkill, proficiency: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
+                    type="text"
+                    value={editingSkill.acquiredDate || ""}
+                    onChange={(e) => setEditingSkill({ ...editingSkill, acquiredDate: e.target.value })}
+                    placeholder="e.g. 2024 or Jan 2025"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Learning Sources (comma separated)</label>
+                  <input
+                    type="text"
+                    value={editingSkill.sources || ""}
+                    onChange={(e) => setEditingSkill({ ...editingSkill, sources: e.target.value })}
+                    placeholder="e.g. Udacity, Self-Taught, Official Docs"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Acquisition Date (e.g., 2024, 2025)</label>
-                <input
-                  type="text"
-                  value={editingSkill.acquiredDate || ""}
-                  onChange={(e) => setEditingSkill({ ...editingSkill, acquiredDate: e.target.value })}
-                  placeholder="e.g. 2024 or Jan 2025"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Learning Sources (comma separated)</label>
-                <input
-                  type="text"
-                  value={editingSkill.sources || ""}
-                  onChange={(e) => setEditingSkill({ ...editingSkill, sources: e.target.value })}
-                  placeholder="e.g. Udacity, Self-Taught, Official Docs"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
-              </div>
 
-              <div className="flex justify-end space-x-2 pt-3">
+              {/* Modal Footer */}
+              <div className="px-5 py-3.5 border-t border-slate-800 bg-slate-950/80 flex justify-end items-center space-x-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingSkill(null)}
-                  className="px-4 py-2 rounded-lg border border-slate-700 text-xs text-slate-300 hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-emerald-500/20"
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-emerald-500/25 transition"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>Save Skill</span>
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* PROJECT MODAL */}
-      {editingProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-5 shadow-2xl relative">
-            <button onClick={() => setEditingProject(null)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-sm font-bold text-white mb-4">
-              {editingProject.id ? `Edit Project #${editingProject.id}` : "Add New Project"}
-            </h3>
+      {editingProject && typeof window !== "undefined" && document.body && createPortal(
+        <div
+          onClick={() => setEditingProject(null)}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 animate-fadeIn overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900/95 border border-purple-500/40 rounded-2xl w-full max-w-lg shadow-2xl shadow-purple-500/10 flex flex-col max-h-[88vh] my-auto relative overflow-hidden"
+          >
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                <h3 className="text-sm sm:text-base font-extrabold text-white">
+                  {editingProject.id ? `Edit Project #${editingProject.id}` : "Add New Project"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingProject(null)}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/80 text-slate-400 hover:text-white transition"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSaveProject} className="space-y-3">
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Project Title *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingProject.title || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
-                  placeholder="e.g. Aether E-Commerce Portal"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Image URL</label>
-                <input
-                  type="url"
-                  value={editingProject.imgUrl || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, imgUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Live Demo Link</label>
-                <input
-                  type="url"
-                  value={editingProject.liveLink || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, liveLink: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Tech Stack Tags (comma separated)</label>
-                <input
-                  type="text"
-                  value={editingProject.tags || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, tags: e.target.value })}
-                  placeholder="e.g. React, Next.js, UI/UX, Tailwind"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-slate-300 mb-1">Tools & Libraries (comma separated)</label>
-                <input
-                  type="text"
-                  value={editingProject.tools || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, tools: e.target.value })}
-                  placeholder="e.g. reactHooks, redux, reduxToolkit, scss"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
-                />
+            {/* Form Body - Scrollable */}
+            <form onSubmit={handleSaveProject} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-5 space-y-4 overflow-y-auto flex-1 pr-3 max-h-[calc(88vh-130px)] no-scrollbar">
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Project Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingProject.title || ""}
+                    onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                    placeholder="e.g. Aether E-Commerce Portal"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Project Description</label>
+                  <textarea
+                    rows={3}
+                    value={editingProject.description || ""}
+                    onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                    placeholder="Describe the project features, architecture, and your role..."
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Project Images (Cloudinary Multi-Upload)</label>
+                  <div className="border-2 border-dashed border-slate-700 hover:border-cyan-500 rounded-lg p-4 text-center bg-slate-950/50 transition relative">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      disabled={uploadingFiles}
+                      onChange={(e) => handleCloudinaryUpload(e.target.files)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                    />
+                    <div className="flex flex-col items-center justify-center space-y-1">
+                      {uploadingFiles ? (
+                        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+                      ) : (
+                        <UploadCloud className="w-8 h-8 text-cyan-400" />
+                      )}
+                      <p className="text-xs font-bold text-slate-200">
+                        {uploadingFiles ? `Uploading (${uploadProgress ?? 0}%)...` : "Click or drag images to upload via Cloudinary"}
+                      </p>
+                      <p className="text-[10px] text-slate-400">Supports PNG, JPG, WEBP • Auto preset: myPreset1</p>
+                    </div>
+                  </div>
+
+                  {uploadingFiles && uploadProgress !== null && (
+                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                      <div
+                        className="bg-cyan-500 h-full transition-all duration-300 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  )}
+
+                  {(() => {
+                    const imgs = editingProject.images
+                      ? (typeof editingProject.images === "string" ? tryParseJsonArray(editingProject.images) : editingProject.images)
+                      : (editingProject.imgUrl ? [editingProject.imgUrl] : []);
+                    if (!imgs || imgs.length === 0) return null;
+                    return (
+                      <div className="flex flex-wrap gap-2 mt-3 p-2 bg-slate-950 rounded-lg border border-slate-800 max-h-[140px] overflow-y-auto no-scrollbar">
+                        {imgs.map((url, idx) => (
+                          <div key={idx} className="relative group w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-slate-700 shrink-0">
+                            <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = imgs.filter((_, i) => i !== idx);
+                                setEditingProject({
+                                  ...editingProject,
+                                  images: JSON.stringify(updated),
+                                  imgUrl: updated[0] || "",
+                                });
+                              }}
+                              className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            {idx === 0 && (
+                              <span className="absolute bottom-0 inset-x-0 bg-cyan-500 text-black text-[8px] font-bold text-center py-0.5">Cover</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Direct Image URL / Cover (Optional fallback)</label>
+                  <input
+                    type="url"
+                    value={editingProject.imgUrl || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const imgs = editingProject.images
+                        ? (typeof editingProject.images === "string" ? tryParseJsonArray(editingProject.images) : editingProject.images)
+                        : [];
+                      const updated = imgs.length > 0 ? [val, ...imgs.slice(1)] : [val];
+                      setEditingProject({ ...editingProject, imgUrl: val, images: JSON.stringify(updated) });
+                    }}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Live Demo Link</label>
+                  <input
+                    type="url"
+                    value={editingProject.liveLink || ""}
+                    onChange={(e) => setEditingProject({ ...editingProject, liveLink: e.target.value })}
+                    placeholder="https://..."
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Tech Stack Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={editingProject.tags || ""}
+                    onChange={(e) => setEditingProject({ ...editingProject, tags: e.target.value })}
+                    placeholder="e.g. React, Next.js, UI/UX, Tailwind"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-300 mb-1 font-semibold">Tools & Libraries (comma separated)</label>
+                  <input
+                    type="text"
+                    value={editingProject.tools || ""}
+                    onChange={(e) => setEditingProject({ ...editingProject, tools: e.target.value })}
+                    placeholder="e.g. reactHooks, redux, reduxToolkit, scss"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-end space-x-2 pt-3">
+              {/* Modal Footer */}
+              <div className="px-5 py-3.5 border-t border-slate-800 bg-slate-950/80 flex justify-end items-center space-x-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingProject(null)}
-                  className="px-4 py-2 rounded-lg border border-slate-700 text-xs text-slate-300 hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl border border-slate-700 text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-purple-500/20"
+                  className="px-5 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-purple-500/25 transition"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-4 h-4" />
                   <span>Save Project</span>
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
