@@ -81,11 +81,11 @@ export function ContactWindow() {
               </div>
               <div>
                 <div className="text-[10px] font-mono text-slate-400">PHONE / WHATSAPP</div>
-                <div className="text-xs font-semibold text-white">+20 01150414986</div>
+                <div className="text-xs font-semibold text-white">+201094855028</div>
               </div>
             </div>
             <button
-              onClick={() => copyToClipboard("+2001150414986", "phone")}
+              onClick={() => copyToClipboard("+201094855028", "phone")}
               className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition shrink-0"
               title="Copy Phone Number"
             >

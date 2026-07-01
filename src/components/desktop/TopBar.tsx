@@ -164,9 +164,9 @@ export function TopBar() {
           <div className="h-3.5 w-px bg-slate-700/60" />
 
           {/* Active Window Title */}
-          <div className="flex items-center space-x-2 font-medium text-slate-200">
+          <div className="flex items-center space-x-1 sm:space-x-2 font-medium text-slate-200 truncate max-w-[110px] sm:max-w-none">
             <span className="text-cyan-400/80">▸</span>
-            <span>{activeWindow ? windowTitles[activeWindow] : "Desktop"}</span>
+            <span className="truncate">{activeWindow ? windowTitles[activeWindow] : "Desktop"}</span>
           </div>
         </div>
 

@@ -88,7 +88,7 @@ export function TerminalWindow() {
         output = (
           <div className="text-rose-300 space-y-1">
             <p>Email: mostafammt9@gmail.com</p>
-            <p>Phone / WhatsApp: +20 01150414986</p>
+            <p>Phone / WhatsApp: +201094855028</p>
             <p>GitHub: github.com/MostafaTarekAioup</p>
           </div>
         );

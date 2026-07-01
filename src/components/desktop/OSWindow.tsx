@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useOS, WindowId } from "@/context/OSContext";
-import { X, Minus, Square, Maximize2, Minimize2 } from "lucide-react";
+import { X, Minus, Maximize2, Minimize2 } from "lucide-react";
 
 interface OSWindowProps {
   id: WindowId;
@@ -45,6 +45,7 @@ export function OSWindow({
   const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   const windowRef = useRef<HTMLDivElement>(null);
 
@@ -55,9 +56,19 @@ export function OSWindow({
 
   const zIndex = 10 + Math.max(0, windowOrder.indexOf(id));
 
+  // Detect mobile screens for responsive behavior
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Drag logic
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (isMaximized) return;
+    if (isMaximized || isMobile) return;
     focusWindow(id);
     setIsDragging(true);
     setDragOffset({
@@ -68,7 +79,7 @@ export function OSWindow({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging && !isMaximized) {
+      if (isDragging && !isMaximized && !isMobile) {
         setPosition({
           x: Math.max(0, Math.min(window.innerWidth - 100, e.clientX - dragOffset.x)),
           y: Math.max(36, Math.min(window.innerHeight - 100, e.clientY - dragOffset.y)),
@@ -88,9 +99,11 @@ export function OSWindow({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragOffset, isMaximized]);
+  }, [isDragging, dragOffset, isMaximized, isMobile]);
 
   if (!isOpen) return null;
+
+  const effectiveMaximized = isMaximized || isMobile;
 
   return (
     <div
@@ -98,12 +111,13 @@ export function OSWindow({
       onClick={() => focusWindow(id)}
       style={{
         zIndex,
-        ...(isMaximized
+        ...(effectiveMaximized
           ? {
               top: "36px",
               left: 0,
               width: "100vw",
-              height: "calc(100vh - 90px)",
+              height: "calc(100vh - 95px)",
+              borderRadius: isMobile ? "0" : undefined,
             }
           : {
               top: `${position.y}px`,
@@ -123,67 +137,71 @@ export function OSWindow({
       {/* Window Header */}
       <div
         onMouseDown={handleMouseDown}
-        onDoubleClick={() => maximizeWindow(id)}
-        className={`h-10 px-3 flex items-center justify-between select-none cursor-move border-b transition-colors ${
+        onDoubleClick={() => {
+          if (!isMobile) maximizeWindow(id);
+        }}
+        className={`h-11 px-3.5 flex items-center justify-between select-none border-b transition-colors ${
+          effectiveMaximized ? "cursor-default" : "cursor-move"
+        } ${
           isActive
-            ? "bg-slate-800/80 border-slate-700/80 text-white"
-            : "bg-slate-900/80 border-slate-800/80 text-slate-400"
+            ? "bg-slate-800/90 border-slate-700/80 text-white"
+            : "bg-slate-900/90 border-slate-800/80 text-slate-400"
         }`}
       >
-        {/* Left: Window Controls (Close, Minimize, Maximize) */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              closeWindow(id);
-            }}
-            className="w-3.5 h-3.5 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center group transition"
-            title="Close"
-          >
-            <X className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition" />
-          </button>
+        {/* Left: Title & Icon */}
+        <div className="flex items-center space-x-2.5 font-semibold text-xs sm:text-sm tracking-wide text-slate-100 truncate pr-2">
+          {Icon && <Icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-cyan-400 shrink-0" />}
+          <span className="truncate">{title}</span>
+        </div>
 
+        {/* Right: Window Controls (Minimize, Maximize, Close) in top-right corner */}
+        <div className="flex items-center space-x-2.5 shrink-0 ml-2">
+          {/* Minimize Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               minimizeWindow(id);
             }}
-            className="w-3.5 h-3.5 rounded-full bg-amber-500 hover:bg-amber-600 flex items-center justify-center group transition"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-amber-500 hover:bg-amber-400 flex items-center justify-center group transition shadow-sm"
             title="Minimize"
           >
-            <Minus className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition" />
+            <Minus className="w-3 h-3 text-black opacity-80 group-hover:opacity-100 transition stroke-[3]" />
           </button>
 
+          {/* Maximize / Restore Button */}
+          {!isMobile && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                maximizeWindow(id);
+              }}
+              className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center group transition shadow-sm"
+              title="Maximize / Restore"
+            >
+              {isMaximized ? (
+                <Minimize2 className="w-2.5 h-2.5 text-black opacity-80 group-hover:opacity-100 transition stroke-[3]" />
+              ) : (
+                <Maximize2 className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition stroke-[3]" />
+              )}
+            </button>
+          )}
+
+          {/* Close Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              maximizeWindow(id);
+              closeWindow(id);
             }}
-            className="w-3.5 h-3.5 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center group transition"
-            title="Maximize / Restore"
+            className="w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full bg-rose-500 hover:bg-rose-400 flex items-center justify-center group transition shadow-sm"
+            title="Close"
           >
-            {isMaximized ? (
-              <Minimize2 className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition" />
-            ) : (
-              <Maximize2 className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition" />
-            )}
+            <X className="w-3 h-3 text-black opacity-80 group-hover:opacity-100 transition stroke-[3]" />
           </button>
-        </div>
-
-        {/* Center: Title & Icon */}
-        <div className="flex items-center space-x-2 font-medium text-xs tracking-wide">
-          {Icon && <Icon className="w-4 h-4 text-cyan-400" />}
-          <span>{title}</span>
-        </div>
-
-        {/* Right: Spacer for balance */}
-        <div className="w-12 text-right text-[10px] font-mono text-slate-500">
-          {isMaximized ? "MAX" : "WIN"}
         </div>
       </div>
 
       {/* Window Content Body */}
-      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-6 text-slate-200 relative">
+      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-3 sm:p-6 text-slate-200 relative">
         {children}
       </div>
     </div>

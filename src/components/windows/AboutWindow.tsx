@@ -17,11 +17,16 @@ import {
 } from "lucide-react";
 
 interface ProfileData {
-  name: string;
-  role: string;
-  bio: string;
-  avatarUrl: string;
-  cvUrl: string;
+  fullName?: string;
+  name?: string;
+  title?: string;
+  role?: string;
+  bio?: string;
+  avatarUrl?: string;
+  cvUrl?: string;
+  experience?: string;
+  phone?: string;
+  city?: string;
 }
 
 export function AboutWindow() {
@@ -67,10 +72,10 @@ export function AboutWindow() {
         </div>
 
         <h2 className="text-lg font-bold text-white tracking-wide">
-          {profile?.name || "Mostafa Tarek"}
+          {profile?.fullName || profile?.name || "Mostafa Tarek"}
         </h2>
         <p className="text-xs font-medium text-cyan-400 mt-0.5">
-          {profile?.role || "Front-End React Developer"}
+          {profile?.title || profile?.role || "Frontend Engineer (React)"}
         </p>
 
         <div className="w-full border-t border-slate-800 my-4" />
@@ -83,7 +88,7 @@ export function AboutWindow() {
           </div>
           <div className="flex items-center space-x-2.5">
             <Briefcase className="w-4 h-4 text-slate-500 shrink-0" />
-            <span>1+ Years Commercial Exp</span>
+            <span>{profile?.experience || "4+ Years Commercial Exp"}</span>
           </div>
           <div className="flex items-center space-x-2.5">
             <GraduationCap className="w-4 h-4 text-slate-500 shrink-0" />
@@ -95,7 +100,7 @@ export function AboutWindow() {
 
         {/* CV Download Button */}
         <a
-          href={profile?.cvUrl || "/images/Mostafa-Tarek-Front-End-React.pdf"}
+          href={profile?.cvUrl || "/images/Mostafa Tarek_Aioup_CV.pdf"}
           target="_blank"
           rel="noopener noreferrer"
           className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-xs py-2.5 px-4 rounded-xl shadow-lg shadow-cyan-500/20 transition transform active:scale-95"
