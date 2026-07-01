@@ -32,6 +32,7 @@ const windowTitles: Record<WindowId, string> = {
 export function TopBar() {
   const { activeWindow, isAdminMode, setIsAdminMode, openWindow, closeWindow } = useOS();
   const [timeStr, setTimeStr] = useState<string>("");
+  const [shortTimeStr, setShortTimeStr] = useState<string>("");
   const [showPinModal, setShowPinModal] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>("");
   const [pinError, setPinError] = useState<boolean>(false);
@@ -47,7 +48,12 @@ export function TopBar() {
         hour: "2-digit",
         minute: "2-digit",
       };
+      const shortOptions: Intl.DateTimeFormatOptions = {
+        hour: "2-digit",
+        minute: "2-digit",
+      };
       setTimeStr(now.toLocaleDateString("en-US", options));
+      setShortTimeStr(now.toLocaleTimeString("en-US", shortOptions));
     };
     updateTime();
     const timer = setInterval(updateTime, 10000);
@@ -93,16 +99,18 @@ export function TopBar() {
 
   return (
     <>
-      <header className="h-9 w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-3 z-50 text-xs text-slate-300 select-none">
+      <header className="h-9 w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-2 sm:px-3 z-50 text-xs text-slate-300 select-none shrink-0 overflow-hidden">
         {/* Left Section: OS Logo & Active Window */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="flex items-center space-x-1.5 px-2 py-1 rounded hover:bg-slate-800/80 transition text-cyan-400 font-medium"
+              className="flex items-center space-x-1 sm:space-x-1.5 px-1.5 sm:px-2 py-1 rounded hover:bg-slate-800/80 transition text-cyan-400 font-medium whitespace-nowrap shrink-0"
             >
-              <Cpu className="w-4 h-4 animate-spin-slow text-cyan-400" />
-              <span className="font-semibold tracking-wide">AETHER OS</span>
+              <Cpu className="w-4 h-4 animate-spin-slow text-cyan-400 shrink-0" />
+              <span className="font-semibold tracking-wide text-[11px] sm:text-xs">
+                AETHER<span className="hidden sm:inline"> OS</span>
+              </span>
             </button>
 
             {/* Dropdown Menu */}
@@ -162,21 +170,21 @@ export function TopBar() {
             )}
           </div>
 
-          <div className="h-3.5 w-px bg-slate-700/60" />
+          <div className="hidden sm:block h-3.5 w-px bg-slate-700/60 shrink-0" />
 
-          {/* Active Window Title */}
-          <div className="flex items-center space-x-1 sm:space-x-2 font-medium text-slate-200 truncate max-w-[110px] sm:max-w-none">
+          {/* Active Window Title (Hidden on small mobile screens to prevent wrapping and crowding) */}
+          <div className="hidden sm:flex items-center space-x-1.5 font-medium text-slate-200 truncate max-w-[120px] md:max-w-[200px] lg:max-w-none">
             <span className="text-cyan-400/80">▸</span>
             <span className="truncate">{activeWindow ? windowTitles[activeWindow] : "Desktop"}</span>
           </div>
         </div>
 
         {/* Right Section: Status Icons, Admin Badge, Clock */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
           {/* Admin Mode Toggle Button */}
           <button
             onClick={handleToggleAdmin}
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full border transition-all shadow-sm ${
+            className={`flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-1 rounded-full border transition-all shadow-sm whitespace-nowrap shrink-0 ${
               isAdminMode
                 ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-cyan-500/20 animate-pulse-slow"
                 : "bg-slate-800/60 border-slate-700/80 text-slate-400 hover:text-slate-200 hover:border-slate-600"
@@ -185,30 +193,33 @@ export function TopBar() {
           >
             {isAdminMode ? (
               <>
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="font-semibold tracking-wide text-[11px] text-cyan-300">
-                  ADMIN MODE
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="font-semibold tracking-wide text-[10px] sm:text-[11px] text-cyan-300">
+                  <span className="hidden sm:inline">ADMIN </span>MODE
                 </span>
               </>
             ) : (
               <>
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-[11px]">Guest Mode</span>
+                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0" />
+                <span className="text-[10px] sm:text-[11px]">
+                  <span className="hidden sm:inline">Guest </span>Mode
+                </span>
               </>
             )}
           </button>
 
-          {/* System Icons */}
-          <div className="flex items-center space-x-2.5 text-slate-400">
+          {/* System Icons (Hidden on mobile phones) */}
+          <div className="hidden sm:flex items-center space-x-2.5 text-slate-400 shrink-0">
             <Wifi className="w-3.5 h-3.5 hover:text-slate-200 transition" />
             <BatteryCharging className="w-3.5 h-3.5 hover:text-slate-200 transition text-emerald-400" />
           </div>
 
-          <div className="h-3.5 w-px bg-slate-700/60" />
+          <div className="hidden sm:block h-3.5 w-px bg-slate-700/60 shrink-0" />
 
           {/* Clock */}
-          <div className="font-mono text-slate-300 hover:text-white transition tracking-tight">
-            {timeStr || "Loading clock..."}
+          <div className="font-mono text-slate-300 hover:text-white transition tracking-tight whitespace-nowrap shrink-0 text-[11px] sm:text-xs">
+            <span className="sm:hidden">{shortTimeStr || "..."}</span>
+            <span className="hidden sm:inline">{timeStr || "Loading clock..."}</span>
           </div>
         </div>
       </header>
