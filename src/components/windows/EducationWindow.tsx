@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { GraduationCap, Award, Calendar, BookOpen, ExternalLink, Loader2 } from "lucide-react";
+import { GraduationCap, Award, Calendar, BookOpen, Loader2 } from "lucide-react";
 
 interface Education {
   id: number;
@@ -33,6 +33,7 @@ export function EducationWindow() {
   };
 
   useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     fetchEducation();
   }, []);
 
@@ -68,7 +69,7 @@ export function EducationWindow() {
         </div>
       ) : (
         <div className="relative pl-6 border-l-2 border-slate-800 space-y-8 my-4">
-          {education.map((edu, idx) => {
+          {education.map((edu) => {
             const courses = getCourses(edu);
             const isDegree = edu.title.toLowerCase().includes("bachelor") || edu.institution.toLowerCase().includes("university");
             return (

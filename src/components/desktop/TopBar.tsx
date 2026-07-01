@@ -5,15 +5,12 @@ import { useOS, WindowId } from "@/context/OSContext";
 import {
   Wifi,
   BatteryCharging,
-  ShieldAlert,
   ShieldCheck,
   Lock,
   Unlock,
   Terminal,
   Cpu,
   RotateCcw,
-  Code,
-  Check,
   X,
 } from "lucide-react";
 import confetti from "canvas-confetti";

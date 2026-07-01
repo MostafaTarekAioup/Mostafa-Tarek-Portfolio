@@ -8,10 +8,8 @@ import {
   Briefcase,
   GraduationCap,
   Download,
-  ExternalLink,
   Code2,
   LayoutGrid,
-  CheckCircle2,
   Sparkles,
   Award,
 } from "lucide-react";
@@ -174,7 +172,7 @@ export function AboutWindow() {
             </div>
             <div>
               <h5 className="text-xs font-bold text-white">Zagazig University</h5>
-              <p className="text-[11px] text-cyan-400">Bachelor's Degree • 2020</p>
+              <p className="text-[11px] text-cyan-400">Bachelor&apos;s Degree • 2020</p>
               <p className="text-[11px] text-slate-400 mt-1">
                 Completed undergraduate studies with solid engineering & analytical foundation.
               </p>

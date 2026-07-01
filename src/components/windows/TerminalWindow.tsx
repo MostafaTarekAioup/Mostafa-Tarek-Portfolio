@@ -79,7 +79,7 @@ export function TerminalWindow() {
       case "education":
         output = (
           <div className="text-amber-300 space-y-1">
-            <p>• Zagazig University - Bachelor's Degree (2020)</p>
+            <p>• Zagazig University - Bachelor&apos;s Degree (2020)</p>
             <p>• Udacity - Advanced React Professional Nanodegree (2022)</p>
           </div>
         );

@@ -1,6 +1,6 @@
 import { PrismaClient } from "../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import * as fs from "fs";
+import * as crypto from "crypto";
 import "dotenv/config";
 
 const url = (process.env.DATABASE_URL || "").replace(/['"]/g, "");
@@ -327,6 +327,24 @@ async function main() {
     });
   }
   console.log(`✔ ${projectsData.length} Projects seeded with tools and exact IDs.`);
+
+  // 5. Seed Default Admin User
+  const existingAdmin = await prisma.adminUser.findFirst();
+  if (!existingAdmin) {
+    const salt = "aether_default_salt";
+    const hash = crypto.scryptSync("admin123", salt, 64).toString("hex");
+    const passwordHash = `${salt}:${hash}`;
+    await prisma.adminUser.create({
+      data: {
+        username: "mostafa",
+        email: "mostafammt9@gmail.com",
+        passwordHash,
+      },
+    });
+    console.log("✔ Default Admin User seeded (mostafa / admin123).");
+  } else {
+    console.log("✔ Admin User already exists in database.");
+  }
 
   console.log("🎉 Seeding complete!");
 }

@@ -37,3 +37,13 @@ export type Education = Prisma.EducationModel
  * 
  */
 export type Profile = Prisma.ProfileModel
+/**
+ * Model AdminUser
+ * 
+ */
+export type AdminUser = Prisma.AdminUserModel
+/**
+ * Model AdminSession
+ * 
+ */
+export type AdminSession = Prisma.AdminSessionModel

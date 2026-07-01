@@ -1,18 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Compass,
   Radar,
   History,
   Wifi,
-  BatteryMedium,
   Clock,
   Plus,
   Minus,
   Navigation,
-  CheckCircle2,
-  AlertCircle,
   MapPin,
   Activity,
   Radio,

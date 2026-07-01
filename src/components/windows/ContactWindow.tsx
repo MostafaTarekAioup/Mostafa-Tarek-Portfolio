@@ -61,11 +61,11 @@ export function ContactWindow() {
               </div>
               <div className="truncate">
                 <div className="text-[10px] font-mono text-slate-400">EMAIL ADDRESS</div>
-                <div className="text-xs font-semibold text-white truncate">mostafammt9@gmail.com</div>
+                <div className="text-xs font-semibold text-white truncate">mostafatarekaioup@gmail.com</div>
               </div>
             </div>
             <button
-              onClick={() => copyToClipboard("mostafammt9@gmail.com", "email")}
+              onClick={() => copyToClipboard("mostafatarekaioup@gmail.com", "email")}
               className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition shrink-0"
               title="Copy Email"
             >
@@ -106,7 +106,7 @@ export function ContactWindow() {
             <span>GitHub Profile</span>
           </a>
           <a
-            href="https://linkedin.com"
+            href="https://www.linkedin.com/in/mostafa-tarek-050936193"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-2 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-cyan-500/40 rounded-xl p-3 transition text-white text-xs font-medium"
@@ -139,7 +139,7 @@ export function ContactWindow() {
               </div>
               <h4 className="text-base font-bold text-white">Transmission Successful!</h4>
               <p className="text-xs text-slate-300 max-w-sm">
-                Your message has been dispatched to Mostafa's inbox. He will review and respond as quickly as possible.
+                Your message has been dispatched to Mostafa&apos;s inbox. He will review and respond as quickly as possible.
               </p>
             </div>
           ) : (

@@ -12,8 +12,6 @@ import {
   X,
   Code2,
   LayoutGrid,
-  GraduationCap,
-  User,
   CheckCircle2,
   Loader2,
   Lock,
@@ -35,35 +33,25 @@ interface Project {
   imgUrl: string;
   liveLink: string;
   tags: string;
-}
-
-interface Education {
-  id: number;
-  title: string;
-  institution: string;
-  period: string;
-  description: string;
-  courses: string;
-  certificateUrl?: string | null;
+  tools?: string;
 }
 
 export function AdminWindow() {
   const { isAdminMode, setIsAdminMode } = useOS();
-  const [activeTab, setActiveTab] = useState<"skills" | "projects" | "education" | "profile">("skills");
-  const [pinInput, setPinInput] = useState("");
-  const [pinError, setPinError] = useState(false);
+  const [activeTab, setActiveTab] = useState<"skills" | "projects" | "education" | "profile" | "security">("skills");
+  const [usernameInput, setUsernameInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   // Data state
   const [skills, setSkills] = useState<Skill[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [education, setEducation] = useState<Education[]>([]);
   const [loading, setLoading] = useState(false);
   const [notify, setNotify] = useState<string | null>(null);
 
   // Modals / Form state
   const [editingSkill, setEditingSkill] = useState<Partial<Skill> | null>(null);
   const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null);
-  const [editingEducation, setEditingEducation] = useState<Partial<Education> | null>(null);
 
   const showNotification = (msg: string) => {
     setNotify(msg);
@@ -74,14 +62,12 @@ export function AdminWindow() {
     if (!isAdminMode) return;
     setLoading(true);
     try {
-      const [sRes, pRes, eRes] = await Promise.all([
+      const [sRes, pRes] = await Promise.all([
         fetch("/api/skills"),
         fetch("/api/projects"),
-        fetch("/api/education"),
       ]);
       if (sRes.ok) setSkills(await sRes.json());
       if (pRes.ok) setProjects(await pRes.json());
-      if (eRes.ok) setEducation(await eRes.json());
     } catch (err) {
       console.error("Error loading admin data:", err);
     } finally {
@@ -90,22 +76,64 @@ export function AdminWindow() {
   };
 
   useEffect(() => {
+    const checkSession = async () => {
+      const token = localStorage.getItem("admin_token");
+      if (!token) {
+        if (isAdminMode) setIsAdminMode(false);
+        return;
+      }
+      try {
+        const res = await fetch("/api/auth/session", {
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.valid) {
+            setIsAdminMode(true);
+            loadData();
+          } else {
+            localStorage.removeItem("admin_token");
+            setIsAdminMode(false);
+          }
+        } else {
+          localStorage.removeItem("admin_token");
+          setIsAdminMode(false);
+        }
+      } catch (err) {
+        console.error("Error checking session:", err);
+      }
+    };
+
     if (isAdminMode) {
-      loadData();
+      checkSession();
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [isAdminMode, activeTab]);
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const correctPin = process.env.NEXT_PUBLIC_ADMIN_PIN || "1234";
-    if (pinInput === correctPin) {
-      setIsAdminMode(true);
-      setPinError(false);
-      setPinInput("");
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.2 } });
-    } else {
-      setPinError(true);
-      setPinInput("");
+    setLoginError("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: usernameInput, password: passwordInput }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.token) {
+        localStorage.setItem("admin_token", data.token);
+        setIsAdminMode(true);
+        setLoginError("");
+        setUsernameInput("");
+        setPasswordInput("");
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.2 } });
+      } else {
+        setLoginError(data.error || "Invalid username or password");
+        setPasswordInput("");
+      }
+    } catch (err) {
+      console.error("Authentication error:", err);
+      setLoginError("Connection error to auth server");
     }
   };
 
@@ -127,13 +155,18 @@ export function AdminWindow() {
     try {
       const res = await fetch("/api/skills", {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         showNotification(isEdit ? "Skill Updated Successfully!" : "New Skill Added to Database!");
         setEditingSkill(null);
         loadData();
+      } else {
+        showNotification("Error: Unauthorized or failed to save!");
       }
     } catch (err) {
       console.error("Error saving skill:", err);
@@ -143,10 +176,17 @@ export function AdminWindow() {
   const handleDeleteSkill = async (id: number) => {
     if (!confirm("Are you sure you want to delete this skill from database?")) return;
     try {
-      const res = await fetch(`/api/skills?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/skills?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
+      });
       if (res.ok) {
         showNotification("Skill Deleted!");
         loadData();
+      } else {
+        showNotification("Error: Unauthorized or failed to delete!");
       }
     } catch (err) {
       console.error("Error deleting skill:", err);
@@ -165,21 +205,26 @@ export function AdminWindow() {
       tags: typeof editingProject.tags === "string"
         ? editingProject.tags.split(",").map((t) => t.trim())
         : editingProject.tags || ["React"],
-      tools: typeof (editingProject as any).tools === "string"
-        ? (editingProject as any).tools.split(",").map((t: string) => t.trim())
-        : (editingProject as any).tools || [],
+      tools: typeof editingProject.tools === "string"
+        ? editingProject.tools.split(",").map((t: string) => t.trim())
+        : editingProject.tools || [],
     };
 
     try {
       const res = await fetch("/api/projects", {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
         body: JSON.stringify(payload),
       });
       if (res.ok) {
         showNotification(isEdit ? "Project Updated Successfully!" : "New Project Added to Registry!");
         setEditingProject(null);
         loadData();
+      } else {
+        showNotification("Error: Unauthorized or failed to save!");
       }
     } catch (err) {
       console.error("Error saving project:", err);
@@ -189,10 +234,17 @@ export function AdminWindow() {
   const handleDeleteProject = async (id: number) => {
     if (!confirm("Are you sure you want to delete this project from database?")) return;
     try {
-      const res = await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
+      });
       if (res.ok) {
         showNotification("Project Deleted!");
         loadData();
+      } else {
+        showNotification("Error: Unauthorized or failed to delete!");
       }
     } catch (err) {
       console.error("Error deleting project:", err);
@@ -202,33 +254,49 @@ export function AdminWindow() {
   if (!isAdminMode) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 text-center select-none">
-        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 animate-bounce-slow">
+        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4 animate-bounce-slow shadow-lg shadow-cyan-500/20">
           <Lock className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-bold text-white mb-1">Protected Admin Control Panel</h3>
+        <h3 className="text-lg font-bold text-white mb-1">Aether OS Administrator Portal</h3>
         <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
-          This dashboard allows Mostafa Tarek to add, update, or delete portfolio projects and acquired tech skills in real-time. Please enter security PIN.
+          Log into Prisma Postgres management dashboard. Enter your verified account credentials below to manage projects, skills, and site configurations.
         </p>
 
-        <form onSubmit={handlePinSubmit} className="w-full max-w-xs space-y-3">
-          <input
-            type="password"
-            value={pinInput}
-            onChange={(e) => {
-              setPinInput(e.target.value);
-              setPinError(false);
-            }}
-            placeholder="Enter PIN (Default: 1234)"
-            maxLength={8}
-            autoFocus
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center tracking-widest text-lg font-mono text-white focus:outline-none focus:border-cyan-500 transition"
-          />
-          {pinError && <p className="text-xs text-rose-400 font-medium">Incorrect PIN code. Try 1234.</p>}
+        <form onSubmit={handleLoginSubmit} className="w-full max-w-xs space-y-3">
+          <div>
+            <input
+              type="text"
+              value={usernameInput}
+              onChange={(e) => {
+                setUsernameInput(e.target.value);
+                setLoginError("");
+              }}
+              placeholder="Username or Email (e.g. mostafa)"
+              required
+              autoFocus
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition"
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => {
+                setPasswordInput(e.target.value);
+                setLoginError("");
+              }}
+              placeholder="Password (Default: admin123)"
+              required
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-cyan-500 transition"
+            />
+          </div>
+          {loginError && <p className="text-xs text-rose-400 font-medium">{loginError}</p>}
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition"
+            className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center justify-center space-x-2"
           >
-            Unlock Dashboard
+            <ShieldCheck className="w-4 h-4" />
+            <span>Sign In to Dashboard</span>
           </button>
         </form>
       </div>
@@ -251,11 +319,11 @@ export function AdminWindow() {
           <ShieldCheck className="w-5 h-5 text-cyan-400" />
           <div>
             <h3 className="text-sm font-bold text-white">OS Content Management System</h3>
-            <span className="text-[10px] font-mono text-cyan-400">STATUS: ADMIN AUTHENTICATED • SQLITE CONNECTED</span>
+            <span className="text-[10px] font-mono text-cyan-400">STATUS: ADMIN AUTHENTICATED • PRISMA POSTGRES CONNECTED</span>
           </div>
         </div>
 
-        {/* Tab Buttons */}
+        {/* Tab Buttons & Lock */}
         <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
           <button
             onClick={() => setActiveTab("skills")}
@@ -274,6 +342,32 @@ export function AdminWindow() {
           >
             <LayoutGrid className="w-3.5 h-3.5" />
             <span>Projects ({projects.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("security")}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition ${
+              activeTab === "security" ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            <span>Account Security</span>
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await fetch("/api/auth/logout", {
+                  method: "POST",
+                  headers: { "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}` },
+                });
+                } catch {}
+              localStorage.removeItem("admin_token");
+              setIsAdminMode(false);
+            }}
+            title="Logout of Dashboard"
+            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30 transition ml-1"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Logout</span>
           </button>
         </div>
       </div>
@@ -358,7 +452,7 @@ export function AdminWindow() {
                   liveLink: "https://github.com/MostafaTarekAioup",
                   tags: "React, Next.js, Tailwind",
                   tools: "react, jsx, css, reactHooks",
-                } as any)
+                })
               }
               className="flex items-center space-x-1.5 bg-purple-500 hover:bg-purple-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-lg shadow-purple-500/20"
             >
@@ -378,7 +472,7 @@ export function AdminWindow() {
                   <div className="truncate">
                     <div className="font-bold text-sm text-white truncate">{proj.title}</div>
                     <div className="text-[11px] text-purple-400 font-mono truncate">Tags: {proj.tags}</div>
-                    <div className="text-[10px] text-slate-400 font-mono truncate">Tools: {(proj as any).tools}</div>
+                    <div className="text-[10px] text-slate-400 font-mono truncate">Tools: {proj.tools}</div>
                     <a
                       href={proj.liveLink}
                       target="_blank"
@@ -408,6 +502,84 @@ export function AdminWindow() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ACCOUNT SECURITY MANAGEMENT TAB */}
+      {activeTab === "security" && (
+        <div className="flex-1 overflow-y-auto pr-1 space-y-4">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 max-w-xl mx-auto space-y-6 shadow-2xl">
+            <div className="flex items-center space-x-3 pb-4 border-b border-slate-800">
+              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white">Administrator Credentials</h4>
+                <p className="text-xs text-slate-400">Update your username, email, or password stored securely in Prisma Postgres.</p>
+              </div>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const u = (form.elements.namedItem("sec_username") as HTMLInputElement).value;
+                const m = (form.elements.namedItem("sec_email") as HTMLInputElement).value;
+                const curP = (form.elements.namedItem("sec_cur_pass") as HTMLInputElement).value;
+                const newP = (form.elements.namedItem("sec_new_pass") as HTMLInputElement).value;
+
+                try {
+                  const res = await fetch("/api/auth/session", {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+                    },
+                    body: JSON.stringify({
+                      username: u || undefined,
+                      email: m || undefined,
+                      currentPassword: curP || undefined,
+                      newPassword: newP || undefined,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (res.ok && data.success) {
+                    showNotification("Account credentials updated successfully!");
+                    form.reset();
+                  } else {
+                    showNotification(`Error: ${data.error || "Failed to update"}`);
+                  }
+                } catch {
+                  showNotification("Error: Network or server error");
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">New Username (Optional)</label>
+                <input name="sec_username" type="text" placeholder="e.g. mostafa" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">New Email Address (Optional)</label>
+                <input name="sec_email" type="email" placeholder="e.g. mostafammt9@gmail.com" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+              <div className="pt-2 border-t border-slate-800/80">
+                <label className="block text-xs font-mono text-amber-400 mb-1">Current Password (Required for changes) *</label>
+                <input name="sec_cur_pass" type="password" required placeholder="Enter current password to verify identity" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 transition" />
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">New Password (Optional)</label>
+                <input name="sec_new_pass" type="password" placeholder="Enter new secret password" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition" />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shadow-lg shadow-amber-500/20 transition flex items-center justify-center space-x-2"
+              >
+                <Save className="w-4 h-4" />
+                <span>Update Security Settings</span>
+              </button>
+            </form>
           </div>
         </div>
       )}
@@ -560,8 +732,8 @@ export function AdminWindow() {
                 <label className="block text-xs text-slate-300 mb-1">Tools & Libraries (comma separated)</label>
                 <input
                   type="text"
-                  value={(editingProject as any).tools || ""}
-                  onChange={(e) => setEditingProject({ ...editingProject, tools: e.target.value } as any)}
+                  value={editingProject.tools || ""}
+                  onChange={(e) => setEditingProject({ ...editingProject, tools: e.target.value })}
                   placeholder="e.g. reactHooks, redux, reduxToolkit, scss"
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
                 />

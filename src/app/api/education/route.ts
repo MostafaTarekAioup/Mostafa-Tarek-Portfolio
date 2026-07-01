@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminRequest } from "@/lib/auth";
 
 export async function GET() {
   try {
     const edu = await prisma.education.findMany({ orderBy: { id: "asc" } });
     return NextResponse.json(edu);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch education" }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  if (!(await verifyAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const edu = await prisma.education.create({
@@ -24,12 +28,15 @@ export async function POST(request: Request) {
       },
     });
     return NextResponse.json(edu, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to create education" }, { status: 500 });
   }
 }
 
 export async function PUT(request: Request) {
+  if (!(await verifyAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { id, ...data } = body;
@@ -42,19 +49,22 @@ export async function PUT(request: Request) {
       },
     });
     return NextResponse.json(edu);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update education" }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
+  if (!(await verifyAdminRequest(request))) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     await prisma.education.delete({ where: { id: Number(id) } });
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete education" }, { status: 500 });
   }
 }

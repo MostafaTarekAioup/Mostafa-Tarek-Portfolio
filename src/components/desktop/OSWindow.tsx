@@ -24,8 +24,8 @@ export function OSWindow({
   children,
   defaultWidth = 850,
   defaultHeight = 580,
-  minWidth = 400,
-  minHeight = 300,
+  minWidth: _minWidth = 400,
+  minHeight: _minHeight = 300,
   defaultX = 120,
   defaultY = 60,
 }: OSWindowProps) {
@@ -42,7 +42,7 @@ export function OSWindow({
   } = useOS();
 
   const [position, setPosition] = useState({ x: defaultX, y: defaultY });
-  const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
+  const [size] = useState({ width: defaultWidth, height: defaultHeight });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
