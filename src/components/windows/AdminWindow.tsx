@@ -165,6 +165,9 @@ export function AdminWindow() {
       tags: typeof editingProject.tags === "string"
         ? editingProject.tags.split(",").map((t) => t.trim())
         : editingProject.tags || ["React"],
+      tools: typeof (editingProject as any).tools === "string"
+        ? (editingProject as any).tools.split(",").map((t: string) => t.trim())
+        : (editingProject as any).tools || [],
     };
 
     try {
@@ -354,7 +357,8 @@ export function AdminWindow() {
                   imgUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
                   liveLink: "https://github.com/MostafaTarekAioup",
                   tags: "React, Next.js, Tailwind",
-                })
+                  tools: "react, jsx, css, reactHooks",
+                } as any)
               }
               className="flex items-center space-x-1.5 bg-purple-500 hover:bg-purple-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-lg shadow-purple-500/20"
             >
@@ -374,6 +378,7 @@ export function AdminWindow() {
                   <div className="truncate">
                     <div className="font-bold text-sm text-white truncate">{proj.title}</div>
                     <div className="text-[11px] text-purple-400 font-mono truncate">Tags: {proj.tags}</div>
+                    <div className="text-[10px] text-slate-400 font-mono truncate">Tools: {(proj as any).tools}</div>
                     <a
                       href={proj.liveLink}
                       target="_blank"
@@ -548,6 +553,16 @@ export function AdminWindow() {
                   value={editingProject.tags || ""}
                   onChange={(e) => setEditingProject({ ...editingProject, tags: e.target.value })}
                   placeholder="e.g. React, Next.js, UI/UX, Tailwind"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-300 mb-1">Tools & Libraries (comma separated)</label>
+                <input
+                  type="text"
+                  value={(editingProject as any).tools || ""}
+                  onChange={(e) => setEditingProject({ ...editingProject, tools: e.target.value } as any)}
+                  placeholder="e.g. reactHooks, redux, reduxToolkit, scss"
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500"
                 />
               </div>

@@ -113,99 +113,218 @@ async function main() {
   }
   console.log("✔ Education seeded.");
 
-  // 4. Seed Projects (Both professional enterprise projects from CV & legacy training projects)
+  // 4. Seed Projects (ONLY the exact projects requested by the user)
+  await prisma.project.deleteMany({});
+  console.log("✔ Cleared old projects registry.");
+
   const projectsData = [
     {
-      title: "SAIP IP Portal (Watania Solutions)",
-      imgUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
-      liveLink: "https://saip.gov.sa",
-      tags: ["React", "Micro-frontend", "Next.js", "Production", "WCAG"],
-    },
-    {
-      title: "Elevenstats Player Analytics (Techsquad)",
-      imgUrl: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80",
-      liveLink: "https://elevenstats.com",
-      tags: ["React", "Charts", "API", "Statistics", "Production"],
-    },
-    {
-      title: "KLU Enterprise Application",
-      imgUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
-      liveLink: "https://github.com/MostafaTarekAioup",
-      tags: ["React", "ES6+", "Architecture", "Production"],
-    },
-    {
-      title: "TAHAQQ Component Library & Squad Lead",
-      imgUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-      liveLink: "https://github.com/MostafaTarekAioup",
-      tags: ["React", "Performance", "Scalability", "Production"],
-    },
-    {
+      id: 1,
       title: "birthday reminder",
       imgUrl: "https://i.ibb.co/CPrHNtZ/b1.webp",
       liveLink: "https://birthdayreminder-react.netlify.app/",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 2,
       title: "Tours",
       imgUrl: "https://i.ibb.co/SrR5Pmv/b2.webp",
       liveLink: "https://admiring-darwin-adfdec.netlify.app/",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 3,
       title: "Review",
       imgUrl: "https://i.ibb.co/xXtjz7Q/b3.webp",
       liveLink: "https://review-react-app.netlify.app",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 4,
       title: "Accordion",
       imgUrl: "https://i.ibb.co/JxydnLC/b4.webp",
       liveLink: "https://accordion-react-pro.netlify.app",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 5,
       title: "Menu",
       imgUrl: "https://i.ibb.co/LYDWWcQ/b5.webp",
       liveLink: "https://our-menu-react.netlify.app",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 6,
       title: "Tabs",
       imgUrl: "https://i.ibb.co/89Fs5cv/b6.webp",
       liveLink: "https://tabs-example-react.netlify.app",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
     },
     {
+      id: 7,
       title: "Slider",
       imgUrl: "https://i.ibb.co/DGxjbCF/b7.webp",
       liveLink: "https://react-slider-slider.netlify.app",
-      tags: ["react", "training", "legacy"],
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 8,
+      title: "Lorem",
+      imgUrl: "https://i.ibb.co/850L0py/b8.webp",
+      liveLink: "https://react-lorem-ipsom.netlify.app",
+      tags: ["react", "web app"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 21,
+      title: "Moon Light",
+      imgUrl: "https://i.ibb.co/X75dk49/Fire-Shot-Capture-002-Moon-Light-elastic-roentgen-f3c167-netlify-app.webp",
+      liveLink: "https://moon-light-parallex-scrolling.netlify.app/",
+      tags: ["html", "css", "landing page"],
+      tools: ["html", "javascript", "css"],
+    },
+    {
+      id: 9,
+      title: "Color Generator",
+      imgUrl: "https://i.ibb.co/NLRjMB5/b9.webp",
+      liveLink: "https://react-color-generator-react.netlify.app",
+      tags: ["react", "web app"],
+      tools: ["react", "jsx", "css", "reactHooks", "values.js"],
+    },
+    {
+      id: 10,
+      title: "Sticky Note",
+      imgUrl: "https://i.ibb.co/VM0nQv3/b10.webp",
+      liveLink: "https://sticky-note-react.netlify.app",
+      tags: ["react", "web app"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 11,
+      title: "Sidebar & Modal",
+      imgUrl: "https://i.ibb.co/K27QFV0/b12.webp",
+      liveLink: "https://react-side-bar-and-modal.netlify.app",
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 12,
+      title: "Stripe",
+      imgUrl: "https://i.ibb.co/T4GkgD1/b13.webp",
+      liveLink: "https://react-stripe-submenu.netlify.app",
+      tags: ["react", "trainning", "website"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 13,
+      title: "Music Box",
+      imgUrl: "https://i.ibb.co/Z2Y91WY/b13-1.webp",
+      liveLink: "https://music-box-tem.netlify.app/",
+      tags: ["html", "css", "landing page"],
+      tools: ["html", "css"],
+    },
+    {
+      id: 14,
+      title: "Developers Gate",
+      imgUrl: "https://i.ibb.co/yBL5KzB/b14.webp",
+      liveLink: "https://developers-gate.netlify.app/",
+      tags: ["html", "css", "landing page"],
+      tools: ["html", "bootstrap 5", "font awesome"],
+    },
+    {
+      id: 15,
+      title: "restaurant reviews",
+      imgUrl: "https://i.ibb.co/dW8R110/b15.webp",
+      liveLink: "https://restaurant-reviews-application.netlify.app/",
+      tags: ["html", "css", "website", "web app"],
+      tools: ["html", "css", "javascript", "json/ajax", "jquery"],
+    },
+    {
+      id: 18,
+      title: "React Pagination",
+      imgUrl: "https://i.ibb.co/846X1dH/pagination.png",
+      liveLink: "https://react-pagination-react.netlify.app/",
+      tags: ["react", "trainning"],
+      tools: ["react", "jsx", "css", "reactHooks"],
+    },
+    {
+      id: 16,
+      title: "React Cart",
+      imgUrl: "https://i.ibb.co/7WzNhgn/b16.webp",
+      liveLink: "https://react-cart-sa.netlify.app/",
+      tags: ["react", "trainning", "redux"],
+      tools: ["react", "jsx", "css", "reactHooks", "redux"],
+    },
+    {
+      id: 20,
+      title: "Ocean Landing Page",
+      imgUrl: "https://i.ibb.co/DgkzxqB/Ocean-Screen.webp",
+      liveLink: "https://ocean-landing-page-react.netlify.app/",
+      tags: ["html", "css", "landing page"],
+      tools: ["html", "javascript", "css"],
+    },
+    {
+      id: 17,
+      title: "Gamer Station",
+      imgUrl: "https://i.ibb.co/LY9zVyB/portfolio-gamer-Station.webp",
+      liveLink: "https://gamer-station-v2.netlify.app/",
+      tags: ["react", "context api", "website", "web app"],
+      tools: ["react", "jsx", "css", "reactHooks", "contextAPI", "react icons ", "react lazy load image component", "react AOS"],
+    },
+    {
+      id: 19,
+      title: "Photo Graphy",
+      imgUrl: "https://i.ibb.co/6sgVwTk/photo-Graphy-Project-Image.png",
+      liveLink: "https://photo-graphy-dbgunk6s4-mostafatarekaioup.vercel.app/",
+      tags: ["react", "redux", "website", "web app"],
+      tools: ["react", "jsx", "css", "reactHooks", "redux", "reduxToolkit", "react-icons ", "react-AOS"],
+    },
+    {
+      id: 22,
+      title: "E-Shop",
+      imgUrl: "https://i.ibb.co/GHMgQv3/egyStore.webp",
+      liveLink: "https://e-shop-react-redux.netlify.app/",
+      tags: ["react", "redux", "website", "web app"],
+      tools: ["react", "jsx", "scss", "reactHooks", "redux", "reduxToolkit", "react-icons ", "auth0", "react-glider"],
+    },
+    {
+      id: 23,
+      title: "elevenstats",
+      imgUrl: "https://i.ibb.co/L9dHTj0/Screenshot-2022-11-29-205548.png",
+      liveLink: "https://www.elevenstats.com/",
+      tags: ["react", "redux", "website", "Next", "TypeScript"],
+      tools: ["react", "jsx", "scss", "reactHooks", "redux", "reduxToolkit", "react-icons ", "auth0", "react-glider"],
+    },
+    {
+      id: 25,
+      title: "Saudi Authority for Intellectual Property",
+      imgUrl: "https://i.ibb.co/3M2vsgY/Screenshot-2023-06-07-201255.png",
+      liveLink: "https://www.saip.gov.sa/",
+      tags: ["react", "redux", "website", "Next", "TypeScript"],
+      tools: ["react", "jsx", "scss", "reactHooks", "redux", "reduxToolkit", "react-icons ", "auth0", "react-glider"],
     },
   ];
 
   for (const proj of projectsData) {
-    const existing = await prisma.project.findFirst({ where: { title: proj.title } });
-    if (!existing) {
-      await prisma.project.create({
-        data: {
-          title: proj.title,
-          imgUrl: proj.imgUrl,
-          liveLink: proj.liveLink,
-          tags: JSON.stringify(proj.tags),
-        },
-      });
-    } else {
-      await prisma.project.update({
-        where: { id: existing.id },
-        data: {
-          imgUrl: proj.imgUrl,
-          liveLink: proj.liveLink,
-          tags: JSON.stringify(proj.tags),
-        },
-      });
-    }
+    await prisma.project.create({
+      data: {
+        id: proj.id,
+        title: proj.title,
+        imgUrl: proj.imgUrl,
+        liveLink: proj.liveLink,
+        tags: JSON.stringify(proj.tags),
+        tools: JSON.stringify(proj.tools),
+      },
+    });
   }
-  console.log(`✔ ${projectsData.length} Projects seeded.`);
+  console.log(`✔ ${projectsData.length} Projects seeded with tools and exact IDs.`);
 
   console.log("🎉 Seeding complete!");
 }

@@ -8,11 +8,12 @@ datasource db {
 }
 
 model Project {
-  id        Int      @id @default(autoincrement())
+  id        Int      @id
   title     String
   imgUrl    String
   liveLink  String
   tags      String   // JSON array of strings e.g. '["react", "training"]'
+  tools     String   @default("[]") // JSON array of strings e.g. '["react", "jsx"]'
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -13,6 +13,8 @@ import { EducationWindow } from "@/components/windows/EducationWindow";
 import { ContactWindow } from "@/components/windows/ContactWindow";
 import { AdminWindow } from "@/components/windows/AdminWindow";
 import { TerminalWindow } from "@/components/windows/TerminalWindow";
+import { FindMeWindow } from "@/components/windows/FindMeWindow";
+import { FuturisticBackground } from "@/components/desktop/FuturisticBackground";
 
 import {
   UserCircle,
@@ -22,11 +24,15 @@ import {
   Mail,
   ShieldCheck,
   Terminal,
+  Compass,
 } from "lucide-react";
 
 export default function Home() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
+      {/* Interactive Sci-Fi Futuristic Background */}
+      <FuturisticBackground />
+
       {/* Top System Menu Bar */}
       <TopBar />
 
@@ -94,6 +100,18 @@ export default function Home() {
           defaultY={80}
         >
           <ContactWindow />
+        </OSWindow>
+
+        <OSWindow
+          id="findme"
+          title="Aether OS - Location Tracker [Restored]"
+          icon={Compass}
+          defaultWidth={980}
+          defaultHeight={640}
+          defaultX={140}
+          defaultY={50}
+        >
+          <FindMeWindow />
         </OSWindow>
 
         <OSWindow

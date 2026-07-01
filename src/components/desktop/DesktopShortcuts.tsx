@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   FileText,
   Globe,
+  Compass,
 } from "lucide-react";
 
 interface ShortcutItem {
@@ -56,6 +57,12 @@ export function DesktopShortcuts() {
       label: "Contact Me",
       icon: Mail,
       colorClass: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+    },
+    {
+      id: "findme",
+      label: "Find Me / Map",
+      icon: Compass,
+      colorClass: "text-cyan-300 bg-cyan-500/10 border-cyan-400/40",
     },
     {
       id: "terminal",

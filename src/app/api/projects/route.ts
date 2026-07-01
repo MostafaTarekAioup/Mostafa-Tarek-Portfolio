@@ -13,12 +13,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    let id = body.id ? Number(body.id) : undefined;
+    if (!id) {
+      const lastProject = await prisma.project.findFirst({ orderBy: { id: "desc" } });
+      id = (lastProject?.id || 0) + 1;
+    }
     const project = await prisma.project.create({
       data: {
+        id,
         title: body.title,
         imgUrl: body.imgUrl || "https://i.ibb.co/CPrHNtZ/b1.webp",
         liveLink: body.liveLink || "#",
         tags: typeof body.tags === "string" ? body.tags : JSON.stringify(body.tags || ["react"]),
+        tools: typeof body.tools === "string" ? body.tools : JSON.stringify(body.tools || []),
       },
     });
     return NextResponse.json(project, { status: 201 });
@@ -37,6 +44,7 @@ export async function PUT(request: Request) {
       data: {
         ...data,
         tags: data.tags ? (typeof data.tags === "string" ? data.tags : JSON.stringify(data.tags)) : undefined,
+        tools: data.tools ? (typeof data.tools === "string" ? data.tools : JSON.stringify(data.tools)) : undefined,
       },
     });
     return NextResponse.json(project);

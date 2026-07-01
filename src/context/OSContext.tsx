@@ -8,6 +8,7 @@ export type WindowId =
   | "projects"
   | "education"
   | "contact"
+  | "findme"
   | "admin"
   | "terminal";
 

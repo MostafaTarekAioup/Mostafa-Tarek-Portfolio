@@ -11,6 +11,7 @@ import {
   Terminal,
   ShieldAlert,
   ShieldCheck,
+  Compass,
 } from "lucide-react";
 
 interface DockItem {
@@ -58,6 +59,13 @@ const dockItems: DockItem[] = [
     glowClass: "shadow-rose-500/30",
   },
   {
+    id: "findme",
+    label: "Location Tracker",
+    icon: Compass,
+    colorClass: "text-cyan-300 bg-cyan-500/10 border-cyan-400/40",
+    glowClass: "shadow-cyan-400/30",
+  },
+  {
     id: "terminal",
     label: "Aether Terminal",
     icon: Terminal,
@@ -82,7 +90,7 @@ export function Dock() {
   };
 
   return (
-    <div className="fixed bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-50 select-none max-w-[98vw] overflow-x-auto no-scrollbar">
+    <div className="fixed bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-50 select-none max-w-[98vw] overflow-x-auto md:overflow-visible no-scrollbar">
       <div className="glass-dock px-2 py-1.5 sm:px-3 sm:py-2 rounded-2xl flex items-center space-x-1 sm:space-x-2 border border-slate-700/60 shadow-2xl bg-slate-900/85 backdrop-blur-2xl shrink-0">
         {dockItems.map((item) => {
           const isOpen = openWindows.includes(item.id);

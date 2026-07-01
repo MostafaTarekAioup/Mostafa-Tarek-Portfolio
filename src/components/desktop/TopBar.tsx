@@ -24,6 +24,7 @@ const windowTitles: Record<WindowId, string> = {
   projects: "Project Gallery & Portfolio",
   education: "Education & Certifications",
   contact: "Contact Me & Socials",
+  findme: "Location Tracker & Network Map",
   admin: "OS Admin Dashboard",
   terminal: "Aether OS Terminal",
 };
