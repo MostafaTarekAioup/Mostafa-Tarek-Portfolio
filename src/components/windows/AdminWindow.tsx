@@ -147,7 +147,10 @@ export function AdminWindow() {
         fetch("/api/projects"),
       ]);
       if (sRes.ok) setSkills(await sRes.json());
-      if (pRes.ok) setProjects(await pRes.json());
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        setProjects(Array.isArray(pData) ? [...pData].sort((a: Project, b: Project) => b.id - a.id) : pData);
+      }
     } catch (err) {
       console.error("Error loading admin data:", err);
     } finally {

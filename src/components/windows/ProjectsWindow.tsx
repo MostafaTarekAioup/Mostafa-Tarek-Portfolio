@@ -35,7 +35,8 @@ export function ProjectsWindow() {
       const res = await fetch("/api/projects");
       if (res.ok) {
         const data = await res.json();
-        setProjects(data);
+        const sorted = Array.isArray(data) ? [...data].sort((a: Project, b: Project) => b.id - a.id) : data;
+        setProjects(sorted);
       }
     } catch (err) {
       console.error("Error fetching projects:", err);

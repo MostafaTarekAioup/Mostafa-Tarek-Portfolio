@@ -178,33 +178,6 @@ export function TopBar() {
 
         {/* Right Section: Status Icons, Admin Badge, Clock */}
         <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
-          {/* Admin Mode Toggle Button */}
-          <button
-            onClick={handleToggleAdmin}
-            className={`flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-2.5 py-1 rounded-full border transition-all shadow-sm whitespace-nowrap shrink-0 ${
-              isAdminMode
-                ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-cyan-500/20 animate-pulse-slow"
-                : "bg-slate-800/60 border-slate-700/80 text-slate-400 hover:text-slate-200 hover:border-slate-600"
-            }`}
-            title={isAdminMode ? "Admin Mode Enabled (Click to lock)" : "Click to unlock Admin Mode"}
-          >
-            {isAdminMode ? (
-              <>
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="font-semibold tracking-wide text-[10px] sm:text-[11px] text-cyan-300">
-                  <span className="hidden sm:inline">ADMIN </span>MODE
-                </span>
-              </>
-            ) : (
-              <>
-                <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0" />
-                <span className="text-[10px] sm:text-[11px]">
-                  <span className="hidden sm:inline">Guest </span>Mode
-                </span>
-              </>
-            )}
-          </button>
-
           {/* System Icons (Hidden on mobile phones) */}
           <div className="hidden sm:flex items-center space-x-2.5 text-slate-400 shrink-0">
             <Wifi className="w-3.5 h-3.5 hover:text-slate-200 transition" />

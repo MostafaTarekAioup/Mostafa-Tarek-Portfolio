@@ -116,7 +116,7 @@ export function OSWindow({
               top: "36px",
               left: 0,
               width: "100vw",
-              height: "calc(100vh - 95px)",
+              height: "calc(100vh - 112px)",
               borderRadius: isMobile ? "0" : undefined,
             }
           : {
@@ -201,7 +201,7 @@ export function OSWindow({
       </div>
 
       {/* Window Content Body */}
-      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-3 sm:p-6 text-slate-200 relative">
+      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-3 pb-8 sm:p-6 sm:pb-6 text-slate-200 relative">
         {children}
       </div>
     </div>

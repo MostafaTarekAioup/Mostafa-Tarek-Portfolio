@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import type { Map as LeafletMap, TileLayer, Marker } from "leaflet";
+import { useOS } from "@/context/OSContext";
 import {
   Compass,
   Radar,
@@ -28,8 +30,6 @@ interface NodeLocation {
   signal: number;
   lastPing: string;
   description: string;
-  top: string;
-  left: string;
 }
 
 const NODES: NodeLocation[] = [
@@ -44,8 +44,6 @@ const NODES: NodeLocation[] = [
     signal: 98.6,
     lastPing: "0.2s ago",
     description: "Primary Development & Architecture Uplink. Operational 24/7.",
-    top: "52%",
-    left: "48%",
   },
   {
     id: "zagazig",
@@ -58,8 +56,6 @@ const NODES: NodeLocation[] = [
     signal: 84.2,
     lastPing: "1.4s ago",
     description: "Secondary Workspace & Backup Server Node.",
-    top: "35%",
-    left: "58%",
   },
   {
     id: "alex",
@@ -72,14 +68,12 @@ const NODES: NodeLocation[] = [
     signal: 0,
     lastPing: "3h ago",
     description: "Remote Relay Station - Currently Offline for Maintenance.",
-    top: "22%",
-    left: "35%",
   },
 ];
 
 export function FindMeWindow() {
+  const { maximizedWindows, openWindows, activeWindow } = useOS();
   const [selectedNode, setSelectedNode] = useState<NodeLocation>(NODES[0]);
-  const [zoom, setZoom] = useState<number>(1);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [radarActive, setRadarActive] = useState<boolean>(true);
   const [mapMode, setMapMode] = useState<"cyber" | "satellite">("cyber");
@@ -88,6 +82,176 @@ export function FindMeWindow() {
     "UPLINK: Connected to Cairo Central HQ (98.6% signal).",
     "GEO_SYNC: Egyptian Sector Grid aligned.",
   ]);
+
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const tileLayerRef = useRef<TileLayer | null>(null);
+  const markersRef = useRef<Record<string, Marker>>({});
+
+  // Initialize Leaflet Map
+  useEffect(() => {
+    let isMounted = true;
+    const initMap = async () => {
+      if (typeof window === "undefined" || !mapContainerRef.current || mapRef.current) return;
+      const L = (await import("leaflet")).default;
+      await import("leaflet/dist/leaflet.css");
+
+      if (!isMounted) return;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [selectedNode.lat, selectedNode.lng],
+        zoom: 11,
+        zoomControl: false,
+        attributionControl: false,
+      });
+
+      const tileUrl =
+        mapMode === "cyber"
+          ? process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+            ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+            : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          : process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+          ? `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+          : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+
+      const tileLayer = L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
+      tileLayerRef.current = tileLayer;
+
+      // Add markers
+      NODES.forEach((node) => {
+        const isSelected = selectedNode.id === node.id;
+        const colorClass =
+          node.status === "active"
+            ? "bg-cyan-400 shadow-cyan-400"
+            : node.status === "standby"
+            ? "bg-purple-500 shadow-purple-500"
+            : "bg-slate-600";
+        const pingHtml =
+          node.status === "active"
+            ? '<div class="absolute -inset-2 rounded-full bg-cyan-400/40 animate-ping"></div>'
+            : "";
+        const selectRingHtml = isSelected
+          ? '<div class="absolute -inset-3 rounded-full border-2 border-dashed border-cyan-300 animate-spin" style="animation-duration: 8s;"></div>'
+          : "";
+
+        const customIcon = L.divIcon({
+          className: "custom-map-pin",
+          html: `<div class="relative flex items-center justify-center w-4 h-4">
+                   ${pingHtml}
+                   ${selectRingHtml}
+                   <div class="w-4 h-4 rounded-full ${colorClass} border-2 border-white shadow-lg flex items-center justify-center">
+                     <div class="w-1.5 h-1.5 rounded-full bg-slate-950"></div>
+                   </div>
+                 </div>`,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        });
+
+        const marker = L.marker([node.lat, node.lng], { icon: customIcon }).addTo(map);
+        marker.on("click", () => {
+          setSelectedNode(node);
+          setLogMessages((prev) => [
+            `[${new Date().toLocaleTimeString()}] TARGET LOCKED: ${node.name} (${node.coords})`,
+            ...prev.slice(0, 5),
+          ]);
+        });
+        markersRef.current[node.id] = marker;
+      });
+
+      mapRef.current = map;
+
+      // Attach ResizeObserver to automatically update Leaflet canvas when window or container resizes
+      if (typeof window !== "undefined" && window.ResizeObserver && mapContainerRef.current) {
+        const observer = new ResizeObserver(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        });
+        observer.observe(mapContainerRef.current);
+      }
+    };
+
+    initMap();
+
+    return () => {
+      isMounted = false;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Guarantee Leaflet recalculates tile coverage when window is maximized, opened, or focused
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.invalidateSize();
+    const t1 = setTimeout(() => mapRef.current?.invalidateSize(), 150);
+    const t2 = setTimeout(() => mapRef.current?.invalidateSize(), 300);
+    const t3 = setTimeout(() => mapRef.current?.invalidateSize(), 500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [maximizedWindows, openWindows, activeWindow]);
+
+  // Update map view & markers when selectedNode changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.flyTo([selectedNode.lat, selectedNode.lng], 12, { duration: 1.5 });
+
+    const updateMarkers = async () => {
+      const L = (await import("leaflet")).default;
+      NODES.forEach((node) => {
+        const marker = markersRef.current[node.id];
+        if (!marker) return;
+        const isSelected = selectedNode.id === node.id;
+        const colorClass =
+          node.status === "active"
+            ? "bg-cyan-400 shadow-cyan-400"
+            : node.status === "standby"
+            ? "bg-purple-500 shadow-purple-500"
+            : "bg-slate-600";
+        const pingHtml =
+          node.status === "active"
+            ? '<div class="absolute -inset-2 rounded-full bg-cyan-400/40 animate-ping"></div>'
+            : "";
+        const selectRingHtml = isSelected
+          ? '<div class="absolute -inset-3 rounded-full border-2 border-dashed border-cyan-300 animate-spin" style="animation-duration: 8s;"></div>'
+          : "";
+
+        const customIcon = L.divIcon({
+          className: "custom-map-pin",
+          html: `<div class="relative flex items-center justify-center w-4 h-4">
+                   ${pingHtml}
+                   ${selectRingHtml}
+                   <div class="w-4 h-4 rounded-full ${colorClass} border-2 border-white shadow-lg flex items-center justify-center">
+                     <div class="w-1.5 h-1.5 rounded-full bg-slate-950"></div>
+                   </div>
+                 </div>`,
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        });
+        marker.setIcon(customIcon);
+      });
+    };
+    updateMarkers();
+  }, [selectedNode]);
+
+  // Update tile layer when mapMode changes
+  useEffect(() => {
+    if (!mapRef.current || !tileLayerRef.current) return;
+    const tileUrl =
+      mapMode === "cyber"
+        ? process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+          ? `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+          : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+        ? `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
+        : "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    tileLayerRef.current.setUrl(tileUrl);
+  }, [mapMode]);
 
   const handleScan = () => {
     setIsScanning(true);
@@ -104,8 +268,12 @@ export function FindMeWindow() {
     }, 1500);
   };
 
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.25, 2));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.25, 0.75));
+  const handleZoomIn = () => mapRef.current?.zoomIn();
+  const handleZoomOut = () => mapRef.current?.zoomOut();
+  const handleRecenter = () => {
+    setSelectedNode(NODES[0]);
+    mapRef.current?.flyTo([NODES[0].lat, NODES[0].lng], 12, { duration: 1.5 });
+  };
 
   return (
     <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 font-sans select-none overflow-hidden relative">
@@ -114,7 +282,9 @@ export function FindMeWindow() {
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1.5">
             <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
-            <span className="font-bold tracking-wider uppercase text-cyan-400 font-mono">AETHER OS // TRACKER V2</span>
+            <span className="font-bold tracking-wider uppercase text-cyan-400 font-mono">
+              AETHER OS // TRACKER V2
+            </span>
           </div>
           <span className="text-slate-600">|</span>
           <div className="flex items-center space-x-1 text-slate-300">
@@ -140,94 +310,37 @@ export function FindMeWindow() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Left/Center: Interactive Map Viewport */}
-        <div className="flex-1 relative overflow-hidden bg-slate-950 flex items-center justify-center">
-          {/* Cyber Grid & Map Backgrounds */}
-          <div
-            className="absolute inset-0 transition-transform duration-500 ease-out flex items-center justify-center"
-            style={{ transform: `scale(${zoom})` }}
-          >
-            {/* Background Map Image / Grid */}
-            {mapMode === "cyber" ? (
-              <div className="absolute inset-0 bg-[radial-gradient(#00f0ff_1px,transparent_1px)] [background-size:24px_24px] opacity-20" />
-            ) : (
-              <img
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1600&q=80"
-                alt="Satellite Map"
-                className="w-full h-full object-cover opacity-25 mix-blend-luminosity filter contrast-150 brightness-75"
+      {/* Main Content Area (Responsive: Stack on mobile, row on desktop) */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        {/* Top/Left: Real Interactive Map Viewport */}
+        <div className="h-[300px] sm:h-[380px] lg:h-auto lg:flex-1 w-full relative overflow-hidden bg-slate-950 flex items-center justify-center shrink-0">
+          <style dangerouslySetInnerHTML={{ __html: `
+            .leaflet-container {
+              background-color: #020617 !important;
+              font-family: inherit !important;
+            }
+          ` }} />
+          {/* Leaflet Map Container */}
+          <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0 bg-slate-950" style={{ backgroundColor: "#020617" }} />
+
+          {/* Radar Sweep Animation Overlay */}
+          {radarActive && (
+            <div className="absolute w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] rounded-full border border-cyan-500/20 flex items-center justify-center pointer-events-none z-10">
+              <div className="absolute w-[250px] h-[250px] sm:w-[320px] sm:h-[320px] rounded-full border border-cyan-500/15 border-dashed" />
+              <div className="absolute w-[150px] h-[150px] sm:w-[180px] sm:h-[180px] rounded-full border border-cyan-500/25" />
+              <div
+                className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/10 via-transparent to-transparent animate-spin"
+                style={{ animationDuration: "6s" }}
               />
-            )}
+            </div>
+          )}
 
-            {/* Radar Sweep Animation Overlay */}
-            {radarActive && (
-              <div className="absolute w-[500px] h-[500px] rounded-full border border-cyan-500/20 flex items-center justify-center pointer-events-none">
-                <div className="absolute w-[350px] h-[350px] rounded-full border border-cyan-500/15 border-dashed" />
-                <div className="absolute w-[200px] h-[200px] rounded-full border border-cyan-500/25" />
-                <div
-                  className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/10 via-transparent to-transparent animate-spin"
-                  style={{ animationDuration: "6s" }}
-                />
-              </div>
-            )}
-
-            {/* Crosshairs */}
-            <div className="absolute w-full h-px bg-cyan-500/15 pointer-events-none" />
-            <div className="absolute h-full w-px bg-cyan-500/15 pointer-events-none" />
-
-            {/* Render Nodes on Map */}
-            {NODES.map((node) => {
-              const isSelected = selectedNode.id === node.id;
-              return (
-                <div
-                  key={node.id}
-                  onClick={() => setSelectedNode(node)}
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 transition-all duration-300"
-                  style={{ top: node.top, left: node.left }}
-                >
-                  {/* Pulsing Outer Ring for Active Node */}
-                  {node.status === "active" && (
-                    <div className="absolute -inset-3 rounded-full bg-cyan-500/30 animate-ping" />
-                  )}
-                  {isSelected && (
-                    <div className="absolute -inset-4 rounded-full border-2 border-dashed border-cyan-400 animate-spin" style={{ animationDuration: "10s" }} />
-                  )}
-
-                  {/* Node Dot Button */}
-                  <div
-                    className={`w-4 h-4 rounded-full flex items-center justify-center border-2 shadow-lg transition-transform group-hover:scale-125 ${
-                      node.status === "active"
-                        ? "bg-cyan-400 border-white shadow-cyan-400/80"
-                        : node.status === "standby"
-                        ? "bg-purple-500 border-slate-300 shadow-purple-500/50"
-                        : "bg-slate-600 border-slate-400 opacity-60"
-                    }`}
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-950" />
-                  </div>
-
-                  {/* Hover/Selected Tooltip */}
-                  <div
-                    className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 whitespace-nowrap px-3 py-1.5 rounded-xl border backdrop-blur-xl shadow-2xl transition-all pointer-events-none ${
-                      isSelected
-                        ? "bg-slate-900/95 border-cyan-500/60 text-cyan-300 opacity-100 scale-100"
-                        : "bg-slate-900/80 border-slate-700 text-slate-300 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100"
-                    }`}
-                  >
-                    <div className="font-bold text-xs flex items-center space-x-1.5">
-                      <span>{node.name}</span>
-                      {node.status === "active" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                    </div>
-                    <div className="font-mono text-[10px] text-slate-400">{node.coords}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* Crosshairs */}
+          <div className="absolute w-full h-px bg-cyan-500/15 pointer-events-none z-10" />
+          <div className="absolute h-full w-px bg-cyan-500/15 pointer-events-none z-10" />
 
           {/* Map Floating Controls Overlay */}
-          <div className="absolute bottom-6 left-6 z-30 flex flex-col space-y-2">
+          <div className="absolute bottom-4 left-4 z-20 flex flex-col space-y-2">
             <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl p-1 flex flex-col shadow-xl">
               <button
                 onClick={handleZoomIn}
@@ -247,7 +360,7 @@ export function FindMeWindow() {
             </div>
 
             <button
-              onClick={() => setSelectedNode(NODES[0])}
+              onClick={handleRecenter}
               className="w-10 h-10 bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-xl flex items-center justify-center text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500/40 transition shadow-xl group"
               title="Recenter on Cairo HQ"
             >
@@ -263,7 +376,10 @@ export function FindMeWindow() {
               }`}
               title="Toggle Radar Sweep"
             >
-              <Radar className={`w-4.5 h-4.5 ${radarActive ? "animate-spin" : ""}`} style={{ animationDuration: "8s" }} />
+              <Radar
+                className={`w-4.5 h-4.5 ${radarActive ? "animate-spin" : ""}`}
+                style={{ animationDuration: "8s" }}
+              />
             </button>
 
             <button
@@ -276,19 +392,21 @@ export function FindMeWindow() {
           </div>
 
           {/* Current Location Badge on Map */}
-          <div className="absolute top-4 left-4 z-30 pointer-events-none">
+          <div className="absolute top-4 left-4 z-20 pointer-events-none">
             <div className="bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-xl px-3 py-2 shadow-2xl flex items-center space-x-2.5">
               <Compass className="w-5 h-5 text-cyan-400 animate-pulse" />
               <div>
-                <div className="text-[10px] uppercase font-mono tracking-widest text-slate-400">Target Tracked</div>
+                <div className="text-[10px] uppercase font-mono tracking-widest text-slate-400">
+                  Target Tracked
+                </div>
                 <div className="text-xs font-bold text-white tracking-wide">{selectedNode.name}</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Sidebar: Telemetry & Node Details (Aether OS Style) */}
-        <div className="w-80 md:w-88 bg-slate-900/90 backdrop-blur-2xl border-l border-slate-800 flex flex-col shrink-0 overflow-y-auto no-scrollbar shadow-2xl relative">
+        {/* Bottom/Right Sidebar: Telemetry & Node Details (Responsive: Under map on mobile, right on desktop) */}
+        <div className="w-full lg:w-80 lg:md:w-88 bg-slate-900/90 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col flex-1 lg:flex-initial overflow-y-auto no-scrollbar shadow-2xl relative">
           {/* Top Neon Glow Border */}
           <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-60 shrink-0" />
 
@@ -303,7 +421,9 @@ export function FindMeWindow() {
                 {selectedNode.code}
               </span>
             </div>
-            <h2 className="text-xl font-extrabold text-white tracking-tight mb-2">{selectedNode.name}</h2>
+            <h2 className="text-xl font-extrabold text-white tracking-tight mb-2">
+              {selectedNode.name}
+            </h2>
             <p className="text-xs text-slate-300 leading-relaxed">{selectedNode.description}</p>
           </div>
 
@@ -324,7 +444,11 @@ export function FindMeWindow() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Signal Strength:</span>
-                <span className={`font-bold ${selectedNode.signal > 50 ? "text-emerald-400" : "text-rose-400"}`}>
+                <span
+                  className={`font-bold ${
+                    selectedNode.signal > 50 ? "text-emerald-400" : "text-rose-400"
+                  }`}
+                >
                   {selectedNode.signal}%
                 </span>
               </div>
@@ -333,7 +457,9 @@ export function FindMeWindow() {
               <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden mt-1">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    selectedNode.signal > 50 ? "bg-gradient-to-r from-cyan-400 to-emerald-400" : "bg-rose-500"
+                    selectedNode.signal > 50
+                      ? "bg-gradient-to-r from-cyan-400 to-emerald-400"
+                      : "bg-rose-500"
                   }`}
                   style={{ width: `${selectedNode.signal}%` }}
                 />
@@ -352,8 +478,8 @@ export function FindMeWindow() {
               <span>{isScanning ? "Scanning..." : "Radar Scan"}</span>
             </button>
             <button
-              onClick={() => setSelectedNode(NODES[0])}
-              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-1.5"
+              onClick={handleRecenter}
+              className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center space-x-1.5 cursor-pointer"
             >
               <MapPin className="w-3.5 h-3.5 text-purple-400" />
               <span>Cairo HQ</span>
@@ -390,7 +516,11 @@ export function FindMeWindow() {
                         }`}
                       />
                       <div>
-                        <div className={`text-xs font-bold ${isSelected ? "text-cyan-300" : "text-slate-200"}`}>
+                        <div
+                          className={`text-xs font-bold ${
+                            isSelected ? "text-cyan-300" : "text-slate-200"
+                          }`}
+                        >
                           {node.name}
                         </div>
                         <div className="font-mono text-[10px] text-slate-400">

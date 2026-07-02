@@ -4,7 +4,7 @@ import { verifyAdminRequest } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({ orderBy: { id: "asc" } });
+    const projects = await prisma.project.findMany({ orderBy: { id: "desc" } });
     return NextResponse.json(projects);
   } catch {
     return NextResponse.json({ error: "Failed to fetch projects" }, { status: 500 });
