@@ -26,7 +26,7 @@ async function main() {
     militaryService: "Exempt",
     city: "Cairo / Egypt",
     cvUrl: "/images/Mostafa Tarek_Aioup_CV.pdf",
-    avatarUrl: "/images/MyPersonalImage.webp",
+    avatarUrl: "/images/MyPersonalImage.jpg",
   };
 
   await prisma.profile.upsert({

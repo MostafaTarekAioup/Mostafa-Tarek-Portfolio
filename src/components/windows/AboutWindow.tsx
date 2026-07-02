@@ -41,9 +41,9 @@ export function AboutWindow() {
   const bioParagraphs = profile?.bio
     ? profile.bio.split("\n\n")
     : [
-        "Specialized in Front-End React development with a strong focus on building responsive, performant, and interactive web applications.",
-        "Experienced in transforming UI/UX designs into functional code, collaborating with cross-functional teams, and implementing scalable state management architectures.",
-      ];
+      "Specialized in Front-End React development with a strong focus on building responsive, performant, and interactive web applications.",
+      "Experienced in transforming UI/UX designs into functional code, collaborating with cross-functional teams, and implementing scalable state management architectures.",
+    ];
 
   return (
     <div className="flex flex-col md:flex-row gap-6 h-full overflow-y-auto select-none pr-1">
@@ -54,7 +54,7 @@ export function AboutWindow() {
           <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-500 animate-pulse-slow" />
           <div className="relative w-36 h-36 rounded-full overflow-hidden border-2 border-slate-800 bg-slate-950">
             <img
-              src={profile?.avatarUrl || "/images/WhatsApp Image 2024-02-17 at 12.30.29 AM.jpeg"}
+              src={"/images/MyPersonalImage.jpg"}
               alt={profile?.name || "Mostafa Tarek"}
               className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
               onError={(e) => {
