@@ -340,7 +340,7 @@ export function AdminWindow() {
 
   if (!isAdminMode) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
         <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-4 animate-bounce-slow shadow-lg shadow-cyan-500/20">
           <Lock className="w-8 h-8" />
         </div>
@@ -391,7 +391,7 @@ export function AdminWindow() {
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4 select-none relative">
+    <div className="flex flex-col h-full space-y-4 relative">
       {/* Toast Notification */}
       {notify && (
         <div className="absolute top-2 right-2 z-50 bg-emerald-500 text-black px-4 py-2 rounded-xl shadow-2xl font-semibold text-xs flex items-center space-x-2 animate-fadeIn">

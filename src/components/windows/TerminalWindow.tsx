@@ -121,7 +121,7 @@ export function TerminalWindow() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950/95 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-200 select-none overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-950/95 border border-slate-800 rounded-xl p-4 font-mono text-xs text-slate-200 overflow-hidden">
       <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800 text-slate-400">
         <div className="flex items-center space-x-2">
           <TerminalIcon className="w-4 h-4 text-cyan-400" />

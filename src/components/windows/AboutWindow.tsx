@@ -46,7 +46,7 @@ export function AboutWindow() {
     ];
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 h-full overflow-y-auto select-none pr-1">
+    <div className="flex flex-col md:flex-row gap-6 h-full overflow-y-auto pr-1">
       {/* Left Column: Avatar & Quick Info Card */}
       <div className="w-full md:w-72 flex flex-col items-center bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 text-center shadow-xl backdrop-blur-md">
         {/* Glowing Avatar */}

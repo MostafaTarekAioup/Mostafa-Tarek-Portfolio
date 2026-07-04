@@ -63,7 +63,7 @@ export function SkillsWindow() {
   });
 
   return (
-    <div className="flex flex-col h-full space-y-5 select-none">
+    <div className="flex flex-col h-full space-y-5">
       {/* Top Bar: Search and Category Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-3 rounded-xl border border-slate-800 backdrop-blur-md">
         <div className="relative flex-1">

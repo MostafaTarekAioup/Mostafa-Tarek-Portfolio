@@ -276,7 +276,7 @@ export function FindMeWindow() {
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 font-sans select-none overflow-hidden relative">
+    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 font-sans overflow-hidden relative">
       {/* Top Status Bar */}
       <div className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0 text-xs">
         <div className="flex items-center space-x-3">

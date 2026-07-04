@@ -49,7 +49,7 @@ export function EducationWindow() {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-5 select-none pr-1 overflow-y-auto">
+    <div className="flex flex-col h-full space-y-5 pr-1 overflow-y-auto">
       <div className="bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-transparent border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-bold text-white">Academic & Professional Credentials</h3>

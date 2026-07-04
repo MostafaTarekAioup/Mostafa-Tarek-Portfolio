@@ -41,7 +41,7 @@ export function ContactWindow() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 h-full overflow-y-auto select-none pr-1">
+    <div className="flex flex-col md:flex-row gap-6 h-full overflow-y-auto pr-1">
       {/* Left Column: Direct Contact & Social Cards */}
       <div className="w-full md:w-80 flex flex-col space-y-4">
         <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-lg backdrop-blur-md">

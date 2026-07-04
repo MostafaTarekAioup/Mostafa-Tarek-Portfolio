@@ -181,7 +181,7 @@ export function OSWindow({
               {isMaximized ? (
                 <Minimize2 className="w-2.5 h-2.5 text-black opacity-80 group-hover:opacity-100 transition stroke-[3]" />
               ) : (
-                <Maximize2 className="w-2.5 h-2.5 text-black opacity-0 group-hover:opacity-100 transition stroke-[3]" />
+                <Maximize2 className="w-2.5 h-2.5 text-black opacity-80 group-hover:opacity-100 transition stroke-[3]" />
               )}
             </button>
           )}
@@ -201,7 +201,7 @@ export function OSWindow({
       </div>
 
       {/* Window Content Body */}
-      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-3 pb-8 sm:p-6 sm:pb-6 text-slate-200 relative">
+      <div className="flex-1 overflow-y-auto bg-slate-950/80 p-3 pb-8 sm:p-6 sm:pb-6 text-slate-200 relative select-text">
         {children}
       </div>
     </div>

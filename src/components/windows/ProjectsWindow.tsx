@@ -78,7 +78,7 @@ export function ProjectsWindow() {
   });
 
   return (
-    <div className="flex flex-col min-h-full space-y-5 select-none">
+    <div className="flex flex-col min-h-full space-y-5">
       {/* Top Controls: Search and Filter Tabs */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 backdrop-blur-md shrink-0">
         <div className="relative flex-1">
