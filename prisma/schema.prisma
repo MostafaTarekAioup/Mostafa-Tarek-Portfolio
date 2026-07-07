@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id        Int      @id
+  title     String
+  imgUrl    String
+  liveLink  String
+  tags      String   // JSON array of strings e.g. '["react", "training"]'
+  tools       String   @default("[]") // JSON array of strings e.g. '["react", "jsx"]'
+  description String   @default("")
+  images      String   @default("[]") // JSON array of image strings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Skill {
+  id           Int      @id @default(autoincrement())
+  title        String
+  iconName     String   // e.g. 'FaHtml5', 'FaReact', 'Code', etc.
+  acquiredDate String   // e.g. '8/2018'
+  sources      String   // JSON array e.g. '["Udacity", "El-Zero Youtube Channel"]'
+  category     String   @default("Frontend")
+  proficiency  Int      @default(85)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Education {
+  id             Int      @id @default(autoincrement())
+  title          String
+  institution    String
+  period         String
+  description    String
+  courses        String   // JSON array of subjects
+  certificateUrl String?
+  createdAt      DateTime @default(now())
+}
+
+model Profile {
+  id              Int    @id @default(1)
+  fullName        String
+  title           String
+  bio             String
+  birthday        String
+  age             Int
+  degree          String
+  phone           String
+  experience      String
+  graduationYear  String
+  militaryService String
+  city            String
+  cvUrl           String
+  avatarUrl       String
+}
+
+model AdminUser {
+  id           Int            @id @default(autoincrement())
+  username     String         @unique
+  email        String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String    @id @default(uuid())
+  userId    Int
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+}
