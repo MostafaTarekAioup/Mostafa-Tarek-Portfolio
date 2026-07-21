@@ -348,7 +348,7 @@ export default function PortfolioWorldMapPage() {
             </div>
           ) : viewMode === "3d" ? (
             <div className='absolute inset-0 z-10 cursor-grab active:cursor-grabbing'>
-              <SceneWrapper cameraPosition={[0, -2, 16]} fov={42}>
+              <SceneWrapper cameraPosition={[0, 6, 14]} fov={45}>
                 <ParticleField
                   count={220}
                   color='#ffd700'

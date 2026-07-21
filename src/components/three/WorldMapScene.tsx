@@ -218,6 +218,7 @@ export function WorldMapScene({
             roughness={0.85}
             metalness={0.15}
             wireframe={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
 
@@ -228,6 +229,7 @@ export function WorldMapScene({
             wireframe
             transparent
             opacity={0.18}
+            side={THREE.DoubleSide}
           />
         </mesh>
 
@@ -300,7 +302,6 @@ export function WorldMapScene({
             position={[0, -1.8, 1.2]}
             rotation={[Math.PI / 2, Math.PI, 0]}
             fontSize={0.45}
-            font='/fonts/Cinzel-Bold.ttf'
             color='#ffd700'
             anchorX='center'
             anchorY='middle'
