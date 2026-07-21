@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useRef, useMemo, useState } from "react"
+import React, { useRef, useState, useMemo, useEffect } from "react"
 import { useFrame, ThreeEvent } from "@react-three/fiber"
-import { OrbitControls, Text, Html } from "@react-three/drei"
+import { OrbitControls, Html } from "@react-three/drei"
 import * as THREE from "three"
 import { useGame } from "@/context/GameContext"
 
@@ -15,7 +15,7 @@ export interface ProjectBeaconData {
   tools: string[]
   description: string
   images: string[]
-  coords: [number, number, number] // [x, y, z] on map
+  coords: [number, number, number]
   region?: string
 }
 
@@ -36,6 +36,23 @@ export function WorldMapScene({
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const controlsRef = useRef<React.ComponentRef<typeof OrbitControls>>(null)
   const groupRef = useRef<THREE.Group>(null)
+  const [mapTexture, setMapTexture] = useState<THREE.Texture | null>(null)
+
+  // Load the detailed Elden Ring Medieval World Map texture asynchronously
+  useEffect(() => {
+    const loader = new THREE.TextureLoader()
+    loader.load(
+      "/images/elden-ring-map.jpg",
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace
+        setMapTexture(tex)
+      },
+      undefined,
+      (err) => {
+        console.warn("Could not load elden-ring-map.jpg, using procedural terrain colors.", err)
+      }
+    )
+  }, [])
 
   // Region centers and camera targets for smooth Elden Ring fast-travel panning
   const regionTargets: Record<
@@ -50,122 +67,98 @@ export function WorldMapScene({
   }
 
   // Topographic Elden Ring continent plane with custom height noise and vertex parchment colors
-  const { terrainGeo, terrainColors } = useMemo(() => {
+  const { terrainGeo } = useMemo(() => {
     const geo = new THREE.PlaneGeometry(30, 22, 140, 100)
     const pos = geo.attributes.position
     const colors = new Float32Array(pos.count * 3)
 
-    // Elden Ring Palette
     const cDeepOcean = new THREE.Color("#050810")
     const cShallowWater = new THREE.Color("#111e38")
-    const cGoldenShore = new THREE.Color("#967d48")
-    const cParchmentLow = new THREE.Color("#2f281e")
-    const cParchmentMid = new THREE.Color("#3d3326")
-    const cForestHigh = new THREE.Color("#293826")
-    const cCaelidScarlet = new THREE.Color("#4a1f1f")
-    const cAltusGold = new THREE.Color("#6b5a35")
-    const cMountainPeak = new THREE.Color("#8f7e63")
+    const cBeach = new THREE.Color("#5e4f34")
+    const cLimgrave = new THREE.Color("#2a3b22")
+    const cLiurnia = new THREE.Color("#192f4d")
+    const cCaelid = new THREE.Color("#522018")
+    const cAltus = new THREE.Color("#735a26")
+    const cPeak = new THREE.Color("#a39882")
 
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i)
       const y = pos.getY(i)
+
       const distFromCenter = Math.sqrt(x * x + y * y)
+      const n1 = Math.sin(x * 0.4) * Math.cos(y * 0.4) * 1.5
+      const n2 = Math.cos(x * 0.8 + y * 0.6) * 0.8
+      const n3 = Math.sin((x - y) * 1.2) * 0.4
 
-      // Procedural continent shaping: high center/midlands, tapering off to oceanic trench edges
-      const continentMask = Math.max(
-        0,
-        Math.min(1, (13.5 - distFromCenter) / 4.5),
-      )
+      let elevation = (n1 + n2 + n3) * 0.7
 
-      // Multi-frequency topographic elevation noise
-      const n1 = Math.sin(x * 0.3 + y * 0.2) * Math.cos(x * 0.2 - y * 0.3) * 1.2
-      const n2 = Math.sin(x * 0.8 - y * 0.9) * 0.4
-      const n3 = Math.cos(x * 1.8 + y * 1.5) * 0.15
+      // Continental mask
+      if (distFromCenter > 11) {
+        elevation -= (distFromCenter - 11) * 0.8
+      }
 
-      // Regional variation
-      let z = (n1 + n2 + n3 + 0.6) * continentMask - (1 - continentMask) * 1.5
+      // Sculpt specific realm features
+      if (x > 3 && y < -1) {
+        elevation += Math.sin(x * 1.5) * 0.6 // Caelid jagged hills
+      } else if (x < -3 && y > 1) {
+        elevation -= 0.5 // Liurnia sunken lake
+      } else if (x > 2 && y > 2) {
+        elevation += 1.2 // Altus high plateau
+      }
 
-      // Create sunken Liurnia lake basin top-left
-      if (x < -2 && y > 1) z -= 0.4 * continentMask
-      // Raise Altus Plateau top-right
-      if (x > 2 && y > 1) z += 0.5 * continentMask
-      // Erdtree central pedestal
-      if (Math.abs(x) < 2.5 && Math.abs(y - 1.5) < 2.5)
-        z += 0.4 * Math.max(0, 2.5 - Math.sqrt(x * x + (y - 1.5) * (y - 1.5)))
+      if (elevation < -0.2) {
+        elevation = -0.3 + elevation * 0.1
+      }
 
-      pos.setZ(i, z)
+      pos.setZ(i, elevation)
 
-      // Color based on elevation and region coordinates
-      const color = new THREE.Color()
-      if (z < -0.4) {
-        color.copy(cDeepOcean)
-      } else if (z < 0.05) {
-        color.lerpColors(cDeepOcean, cShallowWater, (z + 0.4) / 0.45)
-      } else if (z < 0.25) {
-        color.lerpColors(cShallowWater, cGoldenShore, (z - 0.05) / 0.2)
+      // Vertex coloring fallback if texture is not applied yet
+      const vertexColor = new THREE.Color()
+      if (elevation <= -0.2) {
+        vertexColor.lerpColors(cDeepOcean, cShallowWater, (elevation + 1.5) / 1.3)
+      } else if (elevation < 0.1) {
+        vertexColor.lerpColors(cShallowWater, cBeach, (elevation + 0.2) / 0.3)
       } else {
-        // Above sea level landmass
-        if (x > 3 && y < -1) {
-          // Caelid Scarlet rot region
-          color.lerpColors(
-            cParchmentLow,
-            cCaelidScarlet,
-            Math.min(1, (z - 0.25) / 0.8),
-          )
-        } else if (x > 2 && y > 1) {
-          // Altus Plateau golden wheat
-          color.lerpColors(
-            cParchmentMid,
-            cAltusGold,
-            Math.min(1, (z - 0.25) / 1.0),
-          )
-        } else if (x < -2 && y > 1 && z < 0.6) {
-          // Liurnia lake region
-          color.lerpColors(
-            cShallowWater,
-            cForestHigh,
-            Math.min(1, (z - 0.25) / 0.5),
-          )
-        } else if (z < 0.8) {
-          color.lerpColors(cParchmentLow, cParchmentMid, (z - 0.25) / 0.55)
-        } else if (z < 1.5) {
-          color.lerpColors(cParchmentMid, cForestHigh, (z - 0.8) / 0.7)
+        if (x < 0 && y <= 1) {
+          vertexColor.copy(cLimgrave)
+        } else if (x < 0 && y > 1) {
+          vertexColor.copy(cLiurnia)
+        } else if (x >= 0 && y <= 0) {
+          vertexColor.copy(cCaelid)
         } else {
-          color.lerpColors(
-            cForestHigh,
-            cMountainPeak,
-            Math.min(1, (z - 1.5) / 0.8),
-          )
+          vertexColor.copy(cAltus)
+        }
+        if (elevation > 1.4) {
+          vertexColor.lerp(cPeak, Math.min(1, (elevation - 1.4) / 1.0))
         }
       }
 
-      colors[i * 3] = color.r
-      colors[i * 3 + 1] = color.g
-      colors[i * 3 + 2] = color.b
+      colors[i * 3] = vertexColor.r
+      colors[i * 3 + 1] = vertexColor.g
+      colors[i * 3 + 2] = vertexColor.b
     }
 
     geo.setAttribute("color", new THREE.BufferAttribute(colors, 3))
     geo.computeVertexNormals()
-    return { terrainGeo: geo, terrainColors: colors }
+    return { terrainGeo: geo }
   }, [])
 
-  // Guidance of Grace golden light trails pointing from each project Site of Grace to the central Erdtree
+  // Generate golden light lines (Guidance of Grace)
   const guidanceTrails = useMemo(() => {
-    const erdtreePos = new THREE.Vector3(0, 1.5, 1.2)
     const lines: THREE.BufferGeometry[] = []
+    const erdtreePos = new THREE.Vector3(0, 1.5, 1.8)
 
     for (const proj of projects) {
       const [px, py, pz] = proj.coords
-      const start = new THREE.Vector3(px, py, pz + 0.3)
-      // Midpoint curves high upward
-      const mid = new THREE.Vector3(
-        (px + 0) * 0.5,
-        (py + 1.5) * 0.5,
-        Math.max(pz, 1.2) + 2.2,
+      const startPos = new THREE.Vector3(px, py, pz + 0.5)
+      const midPos = new THREE.Vector3(
+        (px + erdtreePos.x) / 2,
+        (py + erdtreePos.y) / 2,
+        Math.max(pz, erdtreePos.z) + 3.5
       )
 
-      const curve = new THREE.QuadraticBezierCurve3(start, mid, erdtreePos)
-      const points = curve.getPoints(24)
+      const curve = new THREE.QuadraticBezierCurve3(startPos, midPos, erdtreePos)
+      const points = curve.getPoints(32)
       lines.push(new THREE.BufferGeometry().setFromPoints(points))
     }
     return lines
@@ -186,7 +179,6 @@ export function WorldMapScene({
         const tgt = new THREE.Vector3(...regionTargets[activeRegion].target)
         controls.target.lerp(tgt, delta * 4)
       } else {
-        // Return center
         controls.target.lerp(new THREE.Vector3(0, 0, 0), delta * 2)
       }
       controls.update()
@@ -200,7 +192,7 @@ export function WorldMapScene({
         enableRotate
         enablePan
         enableZoom
-        maxPolarAngle={Math.PI / 2.1}
+        maxPolarAngle={Math.PI / 2.05}
         minDistance={4}
         maxDistance={28}
         makeDefault
@@ -214,7 +206,9 @@ export function WorldMapScene({
         {/* Topographic Lands Between Continent Mesh */}
         <mesh geometry={terrainGeo} position={[0, 0, 0]}>
           <meshStandardMaterial
-            vertexColors
+            map={mapTexture || undefined}
+            color={mapTexture ? "#ffffff" : undefined}
+            vertexColors={!mapTexture}
             roughness={0.85}
             metalness={0.15}
             wireframe={false}
@@ -225,7 +219,7 @@ export function WorldMapScene({
         {/* Topographic Contour Ring Wireframe Overlay */}
         <mesh geometry={terrainGeo} position={[0, 0, 0.02]}>
           <meshBasicMaterial
-            color='#c8a962'
+            color="#c8a962"
             wireframe
             transparent
             opacity={0.18}
@@ -237,7 +231,7 @@ export function WorldMapScene({
         <mesh position={[0, 0, -0.05]}>
           <ringGeometry args={[14.2, 14.6, 96]} />
           <meshBasicMaterial
-            color='#c8a962'
+            color="#c8a962"
             transparent
             opacity={0.5}
             side={THREE.DoubleSide}
@@ -246,7 +240,7 @@ export function WorldMapScene({
         <mesh position={[0, 0, -0.05]}>
           <ringGeometry args={[14.8, 14.9, 96]} />
           <meshBasicMaterial
-            color='#ffd700'
+            color="#ffd700"
             transparent
             opacity={0.3}
             side={THREE.DoubleSide}
@@ -259,10 +253,10 @@ export function WorldMapScene({
           <mesh position={[0, 0, 1.2]} rotation={[Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[0.35, 0.6, 2.4, 12]} />
             <meshStandardMaterial
-              color='#c8a962'
+              color="#c8a962"
               metalness={0.8}
               roughness={0.2}
-              emissive='#ffd700'
+              emissive="#ffd700"
               emissiveIntensity={0.3}
             />
           </mesh>
@@ -270,7 +264,7 @@ export function WorldMapScene({
           <mesh position={[0, 0, 2.8]}>
             <sphereGeometry args={[1.6, 24, 24]} />
             <meshBasicMaterial
-              color='#ffe57f'
+              color="#ffe57f"
               transparent
               opacity={0.35}
               wireframe={false}
@@ -279,8 +273,8 @@ export function WorldMapScene({
           <mesh position={[0, 0, 2.8]}>
             <sphereGeometry args={[1.3, 16, 16]} />
             <meshPhysicalMaterial
-              color='#ffd700'
-              emissive='#ffd700'
+              color="#ffd700"
+              emissive="#ffd700"
               emissiveIntensity={1.2}
               roughness={0.1}
               metalness={0.9}
@@ -292,103 +286,12 @@ export function WorldMapScene({
           <mesh position={[0, 0, 0.1]} rotation={[Math.PI / 2, 0, 0]}>
             <ringGeometry args={[1.5, 2.8, 32]} />
             <meshBasicMaterial
-              color='#ffd700'
+              color="#ffd700"
               transparent
               opacity={0.25}
               side={THREE.DoubleSide}
             />
           </mesh>
-          <Text
-            position={[0, -1.8, 1.2]}
-            rotation={[Math.PI / 2, Math.PI, 0]}
-            fontSize={0.45}
-            color='#ffd700'
-            anchorX='center'
-            anchorY='middle'
-          >
-            THE ERDTREE CORE
-          </Text>
-        </group>
-
-        {/* Region Banner Labels & Ruined Landmarks across the Lands Between */}
-        <group position={[-7, -4.5, 0.5]}>
-          <Text
-            position={[0, 0, 0.8]}
-            rotation={[0, 0, 0]}
-            fontSize={0.45}
-            color='#4a9eff'
-            anchorX='center'
-            anchorY='middle'
-            outlineWidth={0.02}
-            outlineColor='#000000'
-          >
-            LIMGRAVE • FRONTEND REGION
-          </Text>
-          {/* Castle Ruin */}
-          <mesh position={[-1.8, 1.2, 0.3]} rotation={[Math.PI / 2, 0, 0]}>
-            <boxGeometry args={[0.6, 0.6, 0.6]} />
-            <meshStandardMaterial color='#2d3548' roughness={0.8} />
-          </mesh>
-        </group>
-
-        <group position={[-7, 4.5, 0.5]}>
-          <Text
-            position={[0, 0, 0.8]}
-            rotation={[0, 0, 0]}
-            fontSize={0.45}
-            color='#00f0ff'
-            anchorX='center'
-            anchorY='middle'
-            outlineWidth={0.02}
-            outlineColor='#000000'
-          >
-            LIURNIA • BACKEND & API LAKES
-          </Text>
-          {/* Raya Lucaria Spire */}
-          <mesh position={[1.5, 0.8, 0.5]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.15, 0.3, 1.2, 8]} />
-            <meshStandardMaterial
-              color='#1f2c44'
-              roughness={0.7}
-              emissive='#00f0ff'
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-        </group>
-
-        <group position={[8, -4.5, 0.5]}>
-          <Text
-            position={[0, 0, 0.8]}
-            rotation={[0, 0, 0]}
-            fontSize={0.45}
-            color='#ff6b35'
-            anchorX='center'
-            anchorY='middle'
-            outlineWidth={0.02}
-            outlineColor='#000000'
-          >
-            CAELID • AI & ALGORITHMS
-          </Text>
-          {/* Redmane Ruin */}
-          <mesh position={[1.2, -1, 0.4]} rotation={[Math.PI / 2, 0, 0]}>
-            <boxGeometry args={[0.8, 0.5, 0.7]} />
-            <meshStandardMaterial color='#4a1c1c' roughness={0.9} />
-          </mesh>
-        </group>
-
-        <group position={[7, 4.5, 0.6]}>
-          <Text
-            position={[0, 0, 0.8]}
-            rotation={[0, 0, 0]}
-            fontSize={0.45}
-            color='#c8a962'
-            anchorX='center'
-            anchorY='middle'
-            outlineWidth={0.02}
-            outlineColor='#000000'
-          >
-            ALTUS PLATEAU • ARCHITECTURE
-          </Text>
         </group>
 
         {/* Guidance of Grace Golden Light Trails */}
@@ -402,51 +305,44 @@ export function WorldMapScene({
                   color: "#ffe57f",
                   transparent: true,
                   opacity: selectedId === projects[idx]?.id ? 0.9 : 0.28,
-                }),
+                })
               )
             }
           />
         ))}
 
-        {/* SITES OF GRACE (Lost Grace Beacons for each Project) */}
+        {/* SITES OF GRACE BEACONS WITH PROJECT IMAGES */}
         {projects.map((proj) => {
           const isSelected = selectedId === proj.id
           const isHovered = hoveredId === proj.id
           const [px, py, pz] = proj.coords
 
-          // Compute exact terrain height at this x,y so Site of Grace sits perfectly on land
           const landZ = 0.3
-          const isWeb = proj.tags.some(
-            (t) =>
-              t.toLowerCase().includes("web") ||
-              t.toLowerCase().includes("react") ||
-              t.toLowerCase().includes("next"),
-          )
           const isAI = proj.tags.some(
             (t) =>
               t.toLowerCase().includes("ai") ||
               t.toLowerCase().includes("three") ||
-              proj.tools.join(" ").toLowerCase().includes("ai"),
+              proj.tools.join(" ").toLowerCase().includes("ai")
           )
           const isBackend = proj.tags.some(
             (t) =>
               t.toLowerCase().includes("node") ||
               t.toLowerCase().includes("backend") ||
-              t.toLowerCase().includes("prisma"),
+              t.toLowerCase().includes("prisma")
           )
 
           const siteColor = isSelected
             ? "#00f0ff"
             : isHovered
-              ? "#ff6b35"
-              : isAI
-                ? "#ff8c42"
-                : isBackend
-                  ? "#00f0ff"
-                  : "#c8a962"
+            ? "#ff6b35"
+            : isAI
+            ? "#ff8c42"
+            : isBackend
+            ? "#00f0ff"
+            : "#ffd700"
 
           return (
-            <SiteOfGraceMesh
+            <SiteOfGraceBeacon
               key={proj.id}
               project={proj}
               position={[px, py, pz + landZ]}
@@ -463,6 +359,10 @@ export function WorldMapScene({
                 playSfx("click")
                 onSelectProject(proj)
               }}
+              onInspect={() => {
+                playSfx("open")
+                onSelectProject(proj)
+              }}
             />
           )
         })}
@@ -471,7 +371,7 @@ export function WorldMapScene({
   )
 }
 
-function SiteOfGraceMesh({
+function SiteOfGraceBeacon({
   project,
   position,
   color,
@@ -480,6 +380,7 @@ function SiteOfGraceMesh({
   onPointerOver,
   onPointerOut,
   onClick,
+  onInspect,
 }: {
   project: ProjectBeaconData
   position: [number, number, number]
@@ -489,23 +390,12 @@ function SiteOfGraceMesh({
   onPointerOver: () => void
   onPointerOut: () => void
   onClick: (e: ThreeEvent<MouseEvent>) => void
+  onInspect: () => void
 }) {
-  const flameRef = useRef<THREE.Mesh>(null)
   const ringRef = useRef<THREE.Mesh>(null)
   const outerRingRef = useRef<THREE.Mesh>(null)
 
   useFrame((state, delta) => {
-    if (flameRef.current) {
-      // Golden flame flicker & spin
-      flameRef.current.rotation.z += delta * (isSelected || isHovered ? 4 : 1.8)
-      flameRef.current.position.z =
-        position[2] +
-        0.35 +
-        Math.sin(state.clock.elapsedTime * 4 + project.id) * 0.08
-      const scaleVariation =
-        1 + Math.sin(state.clock.elapsedTime * 6 + project.id) * 0.15
-      flameRef.current.scale.set(scaleVariation, scaleVariation, scaleVariation)
-    }
     if (ringRef.current) {
       ringRef.current.rotation.z += delta * 2
     }
@@ -524,7 +414,7 @@ function SiteOfGraceMesh({
       {/* Elden Ring Site of Grace Medallion Base Plate */}
       <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.5, 0.55, 0.08, 16]} />
-        <meshStandardMaterial color='#1c1914' metalness={0.9} roughness={0.2} />
+        <meshStandardMaterial color="#1c1914" metalness={0.9} roughness={0.2} />
       </mesh>
 
       {/* Ornate Golden Rune Rings on Ground */}
@@ -540,51 +430,138 @@ function SiteOfGraceMesh({
       <mesh ref={outerRingRef} position={[0, 0, 0.08]}>
         <ringGeometry args={[0.45, 0.55, 6]} />
         <meshBasicMaterial
-          color='#ffd700'
+          color="#ffd700"
           transparent
           opacity={isSelected || isHovered ? 0.9 : 0.4}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* The Dancing Golden Flame of Grace */}
-      <mesh ref={flameRef} position={[0, 0, 0.35]}>
-        <coneGeometry args={[0.22, 0.6, 6]} />
-        <meshPhysicalMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={isSelected || isHovered ? 1.5 : 0.7}
-          metalness={0.2}
-          roughness={0.1}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-
-      {/* Guidance of Grace Vertical Ember Pillar */}
-      <mesh position={[0, 0, 1.4]}>
-        <cylinderGeometry args={[0.03, 0.06, 2.2, 8]} />
+      {/* Guidance of Grace Vertical Light Pillar */}
+      <mesh position={[0, 0, 1.2]}>
+        <cylinderGeometry args={[0.03, 0.06, 2.0, 8]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={isSelected || isHovered ? 0.8 : 0.25}
+          opacity={isSelected || isHovered ? 0.9 : 0.3}
         />
       </mesh>
 
-      {/* Floating Name Badge when Hovered or Selected */}
-      {(isHovered || isSelected) && (
-        <Html position={[0, 0.8, 1.8]} center distanceFactor={12}>
-          <div className='px-3 py-1.5 rounded-lg bg-void/95 border-2 border-gold shadow-2xl shadow-gold/30 pointer-events-none flex items-center gap-2 whitespace-nowrap animate-fade-in'>
-            <span className='w-2 h-2 rounded-full bg-gold animate-ping' />
-            <span className='font-cinzel font-bold text-sm text-white tracking-wider'>
-              {project.title}
-            </span>
-            <span className='text-[10px] font-mono text-gold uppercase px-1.5 py-0.5 bg-gold/20 rounded'>
-              SITE OF GRACE
-            </span>
+      {/* FLOATING PROJECT BEACON BADGE WITH SCREENSHOT */}
+      <Html position={[0, 0.6, 1.4]} center distanceFactor={14} zIndexRange={[100, 0]}>
+        <div className="relative group cursor-pointer flex flex-col items-center">
+          {/* Circular Gold Beacon Icon Frame */}
+          <div
+            className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all duration-300 flex items-center justify-center bg-[#181510] shadow-xl ${
+              isSelected || isHovered
+                ? "scale-125 border-[#00f0ff] shadow-[0_0_25px_#00f0ff]"
+                : "border-[#ffd700] shadow-[0_0_15px_rgba(200,169,98,0.6)] hover:border-white"
+            }`}
+          >
+            <img
+              src={project.imgUrl}
+              alt={project.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).src =
+                  "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"
+              }}
+            />
           </div>
-        </Html>
-      )}
+
+          {/* Golden Pulse Ring below badge */}
+          <div
+            className={`absolute inset-0 rounded-full border border-gold/60 animate-ping pointer-events-none ${
+              isSelected || isHovered ? "opacity-80" : "opacity-30"
+            }`}
+          />
+
+          {/* Hover Name Banner */}
+          {(isHovered && !isSelected) && (
+            <div className="absolute top-full mt-2 px-3 py-1.5 rounded-lg bg-[#181510]/95 border-2 border-[#ffd700] shadow-2xl shadow-gold/40 pointer-events-none flex flex-col items-center whitespace-nowrap animate-fade-in z-50">
+              <div className="flex items-center gap-1.5 border-b border-[#5e4f34]/60 pb-1 mb-1 w-full justify-center">
+                <span className="text-[10px] font-mono text-[#00f0ff] font-bold">
+                  {project.region || "REALM"}
+                </span>
+                <span className="text-gold text-xs">•</span>
+                <span className="text-[10px] font-mono text-slate-300 uppercase">
+                  {project.tags[0] || "Code"}
+                </span>
+              </div>
+              <span className="font-cinzel font-bold text-xs sm:text-sm text-white tracking-wide">
+                {project.title}
+              </span>
+              <span className="text-[9px] font-mono text-gold/80 mt-0.5">
+                ✦ CLICK TO EXPAND DETAILS ✦
+              </span>
+            </div>
+          )}
+
+          {/* EXPANDED PROJECT CARD WHEN CLICKED */}
+          {isSelected && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-full mt-2 w-72 bg-[#1c1812]/95 border-2 border-[#ffd700] rounded-xl shadow-[0_0_35px_rgba(200,169,98,0.5)] p-4 text-white z-50 animate-fade-in flex flex-col gap-3"
+            >
+              <div className="flex items-center justify-between border-b border-[#5e4f34] pb-2">
+                <span className="font-cinzel font-bold text-sm text-gold flex items-center gap-1.5 truncate">
+                  <span className="animate-pulse">🌟</span> {project.title}
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-void text-gold border border-gold/40">
+                  {project.region}
+                </span>
+              </div>
+
+              <div className="relative h-32 w-full rounded-lg overflow-hidden border border-[#5e4f34]">
+                <img
+                  src={project.imgUrl}
+                  alt={project.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).src =
+                      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1c1812] via-transparent to-transparent opacity-60" />
+              </div>
+
+              <p className="text-xs font-rajdhani text-slate-300 line-clamp-2 leading-relaxed">
+                {project.description || "Ancient code scroll discovered in the Erdtree archives."}
+              </p>
+
+              <div className="flex flex-wrap gap-1">
+                {project.tags.slice(0, 3).map((t, i) => (
+                  <span
+                    key={i}
+                    className="px-2 py-0.5 rounded bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 font-mono text-[9px]"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-2 border-t border-[#5e4f34]">
+                <button
+                  onClick={onInspect}
+                  className="flex-1 py-1.5 rounded bg-[#ffd700] hover:bg-white text-black font-mono text-xs font-bold uppercase transition shadow-md"
+                >
+                  📜 FULL DETAILS
+                </button>
+                {project.liveLink && project.liveLink !== "#" && (
+                  <a
+                    href={project.liveLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded bg-dark-steel hover:bg-[#00f0ff]/20 text-[#00f0ff] font-mono text-xs font-bold border border-[#00f0ff]/40 transition text-center"
+                  >
+                    🌐 DEMO
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </Html>
     </group>
   )
 }

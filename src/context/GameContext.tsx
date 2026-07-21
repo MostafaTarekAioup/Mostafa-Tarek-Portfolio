@@ -10,7 +10,7 @@ interface GameContextType {
   setActivePose: (pose: CharacterPose) => void;
   soundEnabled: boolean;
   toggleSound: () => void;
-  playSfx: (sfxName: "click" | "hover" | "portal" | "levelUp" | "start") => void;
+  playSfx: (sfxName: "click" | "hover" | "portal" | "levelUp" | "start" | "open") => void;
   loadingProgress: number;
   setLoadingProgress: React.Dispatch<React.SetStateAction<number>>;
   isTransitioning: boolean;
@@ -28,7 +28,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   // Web Audio API Synthesizer for high-tech / medieval SFX without external audio files
   const playSfx = useCallback(
-    (sfxName: "click" | "hover" | "portal" | "levelUp" | "start") => {
+    (sfxName: "click" | "hover" | "portal" | "levelUp" | "start" | "open") => {
       if (!soundEnabled || typeof window === "undefined") return;
       try {
         const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -71,7 +71,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
           gain.connect(ctx.destination);
           osc.start();
           osc.stop(ctx.currentTime + 0.4);
-        } else if (sfxName === "portal" || sfxName === "levelUp") {
+        } else if (sfxName === "portal" || sfxName === "levelUp" || sfxName === "open") {
           const osc1 = ctx.createOscillator();
           const osc2 = ctx.createOscillator();
           const gain = ctx.createGain();

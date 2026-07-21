@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import Image from "next/image"
 import { useGame } from "@/context/GameContext"
 import { PageTransition } from "@/components/game-ui/PageTransition"
 import { GameNav } from "@/components/game-ui/GameNav"
@@ -12,6 +13,32 @@ import {
 } from "@/components/three/WorldMapScene"
 import { ProjectPanel } from "@/components/portfolio/ProjectPanel"
 import { RuneButton } from "@/components/game-ui/RuneButton"
+
+function ProjectCardImage({ src, alt }: { src: string; alt: string }) {
+  const fallback =
+    "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"
+  const [isError, setIsError] = useState(false)
+  const [prevSrc, setPrevSrc] = useState(src)
+
+  if (src !== prevSrc) {
+    setPrevSrc(src)
+    setIsError(false)
+  }
+
+  const currentSrc = isError ? fallback : src || fallback
+
+  return (
+    <Image
+      src={currentSrc}
+      alt={alt}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className="object-cover"
+      unoptimized
+      onError={() => setIsError(true)}
+    />
+  )
+}
 
 interface RawProject {
   id: number
@@ -366,107 +393,182 @@ export default function PortfolioWorldMapPage() {
               </SceneWrapper>
             </div>
           ) : viewMode === "atlas" ? (
-            /* 2D Parchment Elden Ring Atlas Map View */
-            <div className='absolute inset-0 overflow-y-auto overflow-x-auto p-4 sm:p-8 z-20 pointer-events-auto bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2a241b] via-[#1c1812] to-[#0e0c09]'>
+            /* 2D Parchment Elden Ring Atlas Map View with Circular Project Image Beacons */
+            <div className='absolute inset-0 overflow-y-auto overflow-x-auto p-4 sm:p-8 z-20 pointer-events-auto bg-[#0a0806]'>
               <div
-                className='relative min-w-[1000px] max-w-6xl mx-auto min-h-[680px] rounded-3xl border-4 border-[#8a7146]/80 shadow-2xl overflow-hidden p-8 flex flex-col justify-between'
+                className='relative min-w-[1100px] max-w-6xl mx-auto min-h-[740px] rounded-3xl border-4 border-[#8a7146] shadow-2xl overflow-hidden p-8 flex flex-col justify-between'
                 style={{
-                  backgroundImage: `radial-gradient(circle at 50% 50%, rgba(200, 169, 98, 0.08) 0%, transparent 70%), linear-gradient(135deg, rgba(45, 39, 30, 0.9) 0%, rgba(20, 17, 13, 0.95) 100%)`,
-                  boxShadow: "inset 0 0 80px rgba(0,0,0,0.8)",
+                  backgroundImage: `linear-gradient(135deg, rgba(10, 8, 6, 0.45) 0%, rgba(20, 15, 10, 0.75) 100%), url('/images/elden-ring-map.jpg')`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  boxShadow: "inset 0 0 100px rgba(0,0,0,0.85)",
                 }}
               >
-                {/* Decorative Topographic Map Rings & Compass */}
-                <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full border border-gold/15 pointer-events-none' />
-                <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full border border-gold/20 pointer-events-none' />
-                <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full border border-gold/25 pointer-events-none flex items-center justify-center'>
-                  <span className='text-[120px] opacity-10 select-none font-cinzel text-gold'>
-                    🌟
-                  </span>
-                </div>
-
-                {/* Region Headers on the Parchment */}
-                <div className='grid grid-cols-2 gap-12 relative z-10 w-full mb-8'>
-                  <div className='border-l-2 border-gold/40 pl-4 bg-void/30 p-3 rounded-r-xl'>
-                    <span className='text-[10px] font-mono text-cyan-400 tracking-widest block'>
-                      WESTERN CONTINENT
+                {/* Top Header on Map */}
+                <div className='flex items-center justify-between border-b border-gold/40 pb-4 relative z-10 bg-void/60 backdrop-blur-md px-6 py-3 rounded-2xl'>
+                  <div>
+                    <span className='text-[10px] font-mono text-gold uppercase tracking-widest block'>
+                      THE LANDS BETWEEN • CARTOGRAPHY ARCHIVES
                     </span>
-                    <h2 className='text-xl font-cinzel font-bold text-gold'>
-                      LIURNIA & LIMGRAVE REALMS
+                    <h2 className='text-xl sm:text-2xl font-cinzel font-bold text-white flex items-center gap-2'>
+                      <span>ELDEN RING REALM ATLAS</span>
+                      <span className='text-xs px-2.5 py-0.5 rounded-full bg-gold/20 text-gold border border-gold/50 font-mono font-bold'>
+                        {filteredProjects.length} BEACONS
+                      </span>
                     </h2>
-                    <p className='text-xs font-rajdhani text-slate-300'>
-                      Frontend engineering, UI aesthetics, & API integrations.
-                    </p>
                   </div>
-                  <div className='border-l-2 border-gold/40 pl-4 bg-void/30 p-3 rounded-r-xl'>
-                    <span className='text-[10px] font-mono text-ember tracking-widest block'>
-                      EASTERN CONTINENT
-                    </span>
-                    <h2 className='text-xl font-cinzel font-bold text-gold'>
-                      CAELID & ALTUS PLATEAU
-                    </h2>
-                    <p className='text-xs font-rajdhani text-slate-300'>
-                      AI neural models, Three.js 3D shaders, & fullstack
-                      architecture.
+                  <div className='text-right hidden sm:block font-mono text-xs text-slate-300'>
+                    <p>HOVER BEACON TO VIEW TITLE</p>
+                    <p className='text-gold font-bold'>
+                      CLICK BEACON TO EXPAND SCROLL
                     </p>
                   </div>
                 </div>
 
-                {/* Sites of Grace Stamped across the 2D Parchment Grid */}
-                <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 relative z-10 my-4'>
-                  {filteredProjects.map((proj) => {
+                {/* SCATTERED CIRCULAR PROJECT BEACONS ACROSS THE PARCHMENT MAP */}
+                <div className='relative w-full h-[540px] my-6 z-10'>
+                  {filteredProjects.map((proj, idx) => {
                     const isSelected = selectedProject?.id === proj.id
+                    // Map continental coordinates [-11, 11] x [-8, 8] cleanly to percentage bounds [12%, 88%] x [10%, 85%]
+                    const leftPct = Math.max(
+                      12,
+                      Math.min(88, ((proj.coords[0] + 11) / 22) * 76 + 12),
+                    )
+                    const topPct = Math.max(
+                      10,
+                      Math.min(85, ((proj.coords[1] + 8) / 16) * 75 + 10),
+                    )
+
                     return (
                       <div
                         key={proj.id}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           playSfx("click")
-                          setSelectedProject(proj)
+                          setSelectedProject(isSelected ? null : proj)
                         }}
-                        className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
-                          isSelected
-                            ? "bg-gold/20 border-gold shadow-lg shadow-gold/30 -translate-y-1"
-                            : "bg-[#181510]/90 border-[#5e4f34]/60 hover:border-gold hover:bg-[#252018] shadow-md"
-                        }`}
+                        style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+                        className='absolute -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-20 flex flex-col items-center'
                       >
-                        <div className='flex items-center justify-between gap-2 border-b border-[#5e4f34]/40 pb-2.5'>
-                          <span className='flex items-center gap-1.5 font-cinzel font-bold text-xs text-gold'>
-                            <span className='text-base animate-pulse'>🌟</span>
-                            <span>{proj.region || "REALM"}</span>
-                          </span>
-                          <span className='text-[10px] font-mono px-2 py-0.5 rounded bg-void text-gold border border-gold/40'>
-                            GRACE #{proj.id}
-                          </span>
+                        {/* Circular Gold Beacon Badge with Project Image */}
+                        <div
+                          className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all duration-300 flex items-center justify-center bg-[#181510] shadow-xl relative ${
+                            isSelected
+                              ? "scale-125 border-[#00f0ff] shadow-[0_0_30px_#00f0ff] z-40"
+                              : "border-[#ffd700] shadow-[0_0_18px_rgba(200,169,98,0.7)] group-hover:scale-115 group-hover:border-white"
+                          }`}
+                        >
+                          <img
+                            src={proj.imgUrl}
+                            alt={proj.title}
+                            className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                            onError={(e) => {
+                              ;(e.target as HTMLImageElement).src =
+                                "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"
+                            }}
+                          />
                         </div>
 
-                        <div className='my-3'>
-                          <h3 className='text-sm font-bold font-rajdhani text-white group-hover:text-gold transition truncate'>
+                        {/* Pulsing Gold Ring */}
+                        <div
+                          className={`absolute w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gold/70 animate-ping pointer-events-none ${
+                            isSelected
+                              ? "opacity-80"
+                              : "opacity-30 group-hover:opacity-70"
+                          }`}
+                        />
+
+                        {/* Hover Name Banner (Shows when hovered or selected) */}
+                        <div className='mt-2 px-3 py-1.5 rounded-lg bg-[#181510]/95 border-2 border-[#ffd700] shadow-2xl shadow-gold/40 pointer-events-none flex flex-col items-center whitespace-nowrap transition-all duration-300 opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 z-30'>
+                          <div className='flex items-center gap-1.5 border-b border-[#5e4f34]/60 pb-1 mb-1 w-full justify-center'>
+                            <span className='text-[10px] font-mono text-[#00f0ff] font-bold'>
+                              {proj.region || "REALM"}
+                            </span>
+                            <span className='text-gold text-xs'>•</span>
+                            <span className='text-[10px] font-mono text-slate-300 uppercase'>
+                              {proj.tags[0] || "Code"}
+                            </span>
+                          </div>
+                          <span className='font-cinzel font-bold text-xs sm:text-sm text-white tracking-wide'>
                             {proj.title}
-                          </h3>
-                          <p className='text-[11px] font-rajdhani text-slate-300 line-clamp-2 mt-1'>
-                            {proj.description ||
-                              "Lost scroll of code discovered in the realm."}
-                          </p>
+                          </span>
+                          <span className='text-[9px] font-mono text-gold/80 mt-0.5'>
+                            ✦ CLICK TO EXPAND DETAILS ✦
+                          </span>
                         </div>
 
-                        <div className='flex items-center justify-between pt-2 border-t border-[#5e4f34]/40 text-xs font-mono'>
-                          <span className='text-cyan-400 font-bold group-hover:underline'>
-                            INSPECT GRACE ➔
-                          </span>
-                          <span className='text-slate-400 text-[10px]'>
-                            {proj.tags[0] || "Code"}
-                          </span>
-                        </div>
+                        {/* EXPANDED CARD WHEN CLICKED */}
+                        {isSelected && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className='absolute top-full mt-3 w-72 bg-[#1c1812]/95 border-2 border-[#ffd700] rounded-2xl shadow-[0_0_40px_rgba(200,169,98,0.6)] p-4 text-white z-50 animate-fade-in flex flex-col gap-3 cursor-default'
+                          >
+                            <div className='flex items-center justify-between border-b border-[#5e4f34] pb-2'>
+                              <span className='font-cinzel font-bold text-sm text-gold flex items-center gap-1.5 truncate'>
+                                <span className='animate-pulse'>🌟</span>{" "}
+                                {proj.title}
+                              </span>
+                              <span className='text-[10px] font-mono px-2 py-0.5 rounded bg-void text-gold border border-gold/40'>
+                                {proj.region}
+                              </span>
+                            </div>
+
+                            <div className='relative h-32 w-full rounded-lg overflow-hidden border border-[#5e4f34]'>
+                              <ProjectCardImage src={proj.imgUrl} alt={proj.title} />
+                              <div className='absolute inset-0 bg-gradient-to-t from-[#1c1812] via-transparent to-transparent opacity-60' />
+                            </div>
+
+                            <p className='text-xs font-rajdhani text-slate-300 line-clamp-2 leading-relaxed'>
+                              {proj.description ||
+                                "Ancient code scroll discovered in the Erdtree archives."}
+                            </p>
+
+                            <div className='flex flex-wrap gap-1'>
+                              {proj.tags.slice(0, 3).map((t, i) => (
+                                <span
+                                  key={i}
+                                  className='px-2 py-0.5 rounded bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 font-mono text-[9px]'
+                                >
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+
+                            <div className='flex items-center gap-2 pt-2 border-t border-[#5e4f34]'>
+                              <button
+                                onClick={() => {
+                                  playSfx("open")
+                                  setSelectedProject(proj)
+                                }}
+                                className='flex-1 py-1.5 rounded bg-[#ffd700] hover:bg-white text-black font-mono text-xs font-bold uppercase transition shadow-md'
+                              >
+                                📜 FULL DETAILS
+                              </button>
+                              {proj.liveLink && proj.liveLink !== "#" && (
+                                <a
+                                  href={proj.liveLink}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  className='px-3 py-1.5 rounded bg-dark-steel hover:bg-[#00f0ff]/20 text-[#00f0ff] font-mono text-xs font-bold border border-[#00f0ff]/40 transition text-center'
+                                >
+                                  🌐 DEMO
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
                 </div>
 
-                <div className='mt-8 border-t border-gold/30 pt-4 flex flex-wrap items-center justify-between text-xs font-mono text-gold/80'>
+                {/* Footer Legend */}
+                <div className='border-t border-gold/40 pt-4 flex flex-wrap items-center justify-between text-xs font-mono text-gold/90 relative z-10 bg-void/60 backdrop-blur-md px-6 py-2.5 rounded-2xl'>
                   <span>
-                    ERDTREE GUIDANCE: ALL SITES OF GRACE ARE ARCHIVED &
-                    SYNCHRONIZED WITH DATABASE
+                    ERDTREE GUIDANCE: ALL BEACONS ARE ARCHIVED & SYNCHRONIZED
+                    WITH DATABASE
                   </span>
-                  <span>THE LANDS BETWEEN • REGISTRY CARTOGRAPHY V2.4</span>
+                  <span>THE LANDS BETWEEN • REGISTRY CARTOGRAPHY V2.5</span>
                 </div>
               </div>
             </div>
