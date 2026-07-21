@@ -1,32 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
+  --background: #0a0e17;
   --foreground: #f8fafc;
-  --primary: #00f0ff;
-  --primary-glow: rgba(0, 240, 255, 0.4);
-  --secondary: #7000ff;
-  --secondary-glow: rgba(112, 0, 255, 0.4);
-  --accent: #ff007a;
-  --window-bg: rgba(15, 23, 42, 0.75);
-  --window-border: rgba(51, 65, 85, 0.6);
-  --dock-bg: rgba(15, 23, 42, 0.65);
+  --void: #0a0e17;
+  --dark-steel: #1a1f2e;
+  --iron: #2a3040;
+  --gold: #c8a962;
+  --gold-glow: rgba(200, 169, 98, 0.45);
+  --mana-blue: #4a9eff;
+  --mana-glow: rgba(74, 158, 255, 0.45);
+  --ember: #ff6b35;
+  --ember-glow: rgba(255, 107, 53, 0.45);
+  --nature: #50c878;
+  --nature-glow: rgba(80, 200, 120, 0.45);
+  --rune-glow: rgba(200, 169, 98, 0.4);
+  
+  /* Legacy Aether OS tokens preserved for /admin */
+  --primary: #c8a962;
+  --primary-glow: rgba(200, 169, 98, 0.4);
+  --secondary: #4a9eff;
+  --secondary-glow: rgba(74, 158, 255, 0.4);
+  --accent: #ff6b35;
+  --window-bg: rgba(26, 31, 46, 0.85);
+  --window-border: rgba(42, 48, 64, 0.8);
+  --dock-bg: rgba(10, 14, 23, 0.85);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-inter), var(--font-outfit), system-ui, -apple-system, sans-serif;
+  --color-void: var(--void);
+  --color-dark-steel: var(--dark-steel);
+  --color-iron: var(--iron);
+  --color-gold: var(--gold);
+  --color-mana: var(--mana-blue);
+  --color-ember: var(--ember);
+  --color-nature: var(--nature);
+  
+  --font-cinzel: var(--font-cinzel), serif;
+  --font-rajdhani: var(--font-rajdhani), sans-serif;
+  --font-mono: var(--font-mono), monospace;
 }
 
 body {
-  background: var(--background);
+  background: var(--void);
   color: var(--foreground);
-  font-family: var(--font-sans);
-  overflow: hidden;
+  font-family: var(--font-rajdhani);
+  overflow-x: hidden;
   user-select: none;
 }
 
@@ -46,48 +67,127 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(10, 14, 23, 0.8);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: var(--iron);
   border-radius: 3px;
+  border: 1px solid rgba(200, 169, 98, 0.2);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--gold);
 }
 
-/* Glassmorphism & Neon Utilities */
+/* Game UI Panel & Doppelrand (Double-Bezel) Architecture */
+.game-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.92) 0%, rgba(10, 14, 23, 0.96) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(200, 169, 98, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+.game-border-ornate {
+  position: relative;
+  border: 1px solid rgba(200, 169, 98, 0.4);
+  background: rgba(26, 31, 46, 0.85);
+}
+
+.game-border-ornate::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid rgba(200, 169, 98, 0.15);
+  pointer-events: none;
+}
+
+/* Corner Accents for Ornate Panels */
+.game-corner-tl, .game-corner-tr, .game-corner-bl, .game-corner-br {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--gold);
+  pointer-events: none;
+  z-index: 10;
+}
+.game-corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; }
+.game-corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; }
+.game-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; }
+.game-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* Hexagonal Clip Path */
+.hexagon {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Rune Glows & Shimmers */
+.glow-gold {
+  box-shadow: 0 0 20px var(--gold-glow), inset 0 0 15px rgba(200, 169, 98, 0.15);
+}
+
+.glow-mana {
+  box-shadow: 0 0 20px var(--mana-glow), inset 0 0 15px rgba(74, 158, 255, 0.15);
+}
+
+.glow-ember {
+  box-shadow: 0 0 20px var(--ember-glow), inset 0 0 15px rgba(255, 107, 53, 0.15);
+}
+
+.text-glow-gold {
+  text-shadow: 0 0 12px var(--gold-glow), 0 0 24px var(--gold-glow);
+}
+
+.text-glow-mana {
+  text-shadow: 0 0 12px var(--mana-glow), 0 0 24px var(--mana-glow);
+}
+
+/* Legacy Glass Panel & Dock preserved for Admin */
 .glass-panel {
   background: var(--window-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--window-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
 .glass-dock {
   background: var(--dock-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(200, 169, 98, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
 }
 
-.neon-border {
-  border-color: var(--primary);
-  box-shadow: 0 0 15px var(--primary-glow), inset 0 0 15px var(--primary-glow);
-}
-
-.neon-glow-text {
-  text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
-}
-
-/* Cosmic Animations */
+/* Keyframe Animations */
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.03); }
+}
+
+@keyframes rune-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
 }
 
 .animate-pulse-slow {
-  animation: pulse-slow 8s infinite ease-in-out;
+  animation: pulse-slow 6s infinite ease-in-out;
+}
+
+.animate-float {
+  animation: float 4s infinite ease-in-out;
+}
+
+.shimmer-bg {
+  background: linear-gradient(90deg, rgba(200,169,98,0) 0%, rgba(200,169,98,0.2) 50%, rgba(200,169,98,0) 100%);
+  background-size: 200% 100%;
+  animation: rune-shimmer 3s infinite linear;
 }

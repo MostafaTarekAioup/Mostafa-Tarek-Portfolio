@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Cinzel, Rajdhani, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { OSProvider } from "@/context/OSContext";
+import { GameProvider } from "@/context/GameContext";
 
-const inter = Inter({
-  variable: "--font-inter",
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
   subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const rajdhani = Rajdhani({
+  variable: "--font-rajdhani",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Mostafa Tarek | Aether OS Portfolio",
+  title: "Mostafa Tarek | Quest Log — Video Game Developer Portfolio",
   description:
-    "Front-End React Developer with 1+ years of experience in modern web development, React, Next.js, and interactive user interfaces.",
+    "Interactive video game-inspired portfolio of Mostafa Tarek. Experienced Front-End React Developer with 5+ years of commercial mastery building modern web experiences.",
   icons: {
     icon: "/images/portfolio-icon.svg",
   },
@@ -28,9 +37,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} h-full dark`}>
-      <body className="h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100 selection:bg-cyan-500 selection:text-black">
-        <OSProvider>{children}</OSProvider>
+    <html
+      lang="en"
+      className={`${cinzel.variable} ${rajdhani.variable} ${jetbrainsMono.variable} h-full dark`}
+    >
+      <body className="h-screen w-screen overflow-x-hidden bg-slate-950 font-sans text-slate-100 selection:bg-gold selection:text-black">
+        <OSProvider>
+          <GameProvider>{children}</GameProvider>
+        </OSProvider>
       </body>
     </html>
   );
