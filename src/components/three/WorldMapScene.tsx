@@ -131,20 +131,24 @@ export function WorldMapScene({
         makeDefault
       />
 
+      {/* Dedicated Scene Lighting so diorama and beacons are always brilliantly lit */}
+      <ambientLight intensity={3.0} color="#ffffff" />
+      <directionalLight position={[15, 25, 20]} intensity={3.5} color="#fffcf0" />
+      <pointLight position={[0, 0, 20]} intensity={2.5} color="#ffd700" distance={80} />
+
       {/* Main Diorama World Group */}
       <group rotation={[-Math.PI / 3.2, 0, 0]} position={[0, -1, -2]}>
         {/* 1. THE FULL 4K WORLD MAP PLANE (100% Full Resolution & Uncropped Aspect Ratio) */}
-        <mesh position={[0, 0, 0]} receiveShadow>
+        <mesh position={[0, 0, 0]}>
           <planeGeometry args={[mapWidth, mapHeight, 1, 1]} />
           {mapTexture ? (
-            <meshStandardMaterial
+            <meshBasicMaterial
               map={mapTexture}
-              roughness={0.75}
-              metalness={0.1}
               side={THREE.DoubleSide}
+              toneMapped={false}
             />
           ) : (
-            <meshStandardMaterial color="#1a1c23" roughness={0.9} side={THREE.DoubleSide} />
+            <meshBasicMaterial color="#1a1c23" side={THREE.DoubleSide} />
           )}
         </mesh>
 
