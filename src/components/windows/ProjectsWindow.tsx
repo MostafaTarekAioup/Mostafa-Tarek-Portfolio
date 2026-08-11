@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ExternalLink, Search, Tag, Eye, Layers, Loader2, Wrench } from "lucide-react";
+import Image from "next/image";
+import { ExternalLink, Search, Tag, Eye, Layers, Loader2, Wrench, Star } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectCoverflow, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
@@ -19,6 +20,31 @@ interface Project {
   tools?: string;
   description?: string;
   images?: string;
+  isPinned?: boolean;
+  pinOrder?: number;
+}
+
+function SafeProjectCardImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  const [prevSrc, setPrevSrc] = useState(src);
+
+  if (prevSrc !== src) {
+    setPrevSrc(src);
+    setImgSrc(src);
+  }
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className={className}
+      onError={() => {
+        setImgSrc("https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80");
+      }}
+    />
+  );
 }
 
 export function ProjectsWindow() {
@@ -35,7 +61,15 @@ export function ProjectsWindow() {
       const res = await fetch("/api/projects");
       if (res.ok) {
         const data = await res.json();
-        const sorted = Array.isArray(data) ? [...data].sort((a: Project, b: Project) => b.id - a.id) : data;
+        const sorted = Array.isArray(data) ? [...data].sort((a: Project, b: Project) => {
+          // Pinned projects always come first
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+          // Among pinned, sort by pinOrder
+          if (a.isPinned && b.isPinned) return (a.pinOrder || 0) - (b.pinOrder || 0);
+          // Among non-pinned, sort by id desc
+          return b.id - a.id;
+        }) : data;
         setProjects(sorted);
       }
     } catch (err) {
@@ -139,21 +173,28 @@ export function ProjectsWindow() {
             return (
               <div
                 key={project.id}
-                className="group relative bg-slate-900/85 border border-slate-800/90 rounded-xl overflow-hidden hover:border-cyan-500/60 transition-all duration-300 flex flex-col justify-between h-[390px] min-h-[390px] max-h-[390px] w-full shrink-0 shadow-lg hover:shadow-cyan-500/10 hover:-translate-y-1"
+                className={`group relative bg-slate-900/85 border rounded-xl overflow-hidden transition-all duration-300 flex flex-col justify-between h-[390px] min-h-[390px] max-h-[390px] w-full shrink-0 shadow-lg hover:-translate-y-1 ${
+                  project.isPinned
+                    ? 'border-cyan-500/50 shadow-cyan-500/10 hover:border-cyan-400/70 hover:shadow-cyan-500/20'
+                    : 'border-slate-800/90 hover:border-cyan-500/60 hover:shadow-cyan-500/10'
+                }`}
               >
+                {/* Featured Badge */}
+                {project.isPinned && (
+                  <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-2 py-1 bg-cyan-500/20 backdrop-blur-md border border-cyan-500/40 rounded-lg shadow-lg">
+                    <Star className="w-3 h-3 text-cyan-300 fill-cyan-300" />
+                    <span className="text-[10px] font-mono font-bold text-cyan-300 uppercase">Featured</span>
+                  </div>
+                )}
                 {/* Project Image - Guaranteed Fixed Height */}
                 <div
                   onClick={() => setSelectedProject(project)}
                   className="relative h-[180px] min-h-[180px] max-h-[180px] w-full shrink-0 overflow-hidden bg-slate-950 border-b border-slate-800/70 cursor-pointer"
                 >
-                  <img
+                  <SafeProjectCardImage
                     src={project.imgUrl}
                     alt={project.title}
-                    className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80";
-                    }}
+                    className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80" />
 
@@ -290,13 +331,15 @@ export function ProjectsWindow() {
                       {imgs.map((url, index) => (
                         <SwiperSlide
                           key={index}
-                          className="!w-[260px] sm:!w-[340px] md:!w-[420px] aspect-video rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-2xl bg-slate-900 group cursor-pointer"
+                          className="relative !w-[260px] sm:!w-[340px] md:!w-[420px] aspect-video rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-2xl bg-slate-900 group cursor-pointer"
                           onClick={() => setPreviewImg(url)}
                         >
-                          <img
+                          <Image
                             src={url}
                             alt={`${selectedProject.title} screenshot ${index + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            fill
+                            sizes="(max-width: 640px) 260px, (max-width: 768px) 340px, 420px"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                             <span className="text-xs text-white font-semibold flex items-center gap-1 bg-black/60 px-2 py-1 rounded border border-white/20">
@@ -393,7 +436,7 @@ export function ProjectsWindow() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-5xl w-full bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl p-2 flex items-center justify-center my-auto"
+            className="relative max-w-5xl w-full h-[80vh] bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl p-2 flex items-center justify-center my-auto"
           >
             <button
               onClick={() => setPreviewImg(null)}
@@ -401,7 +444,14 @@ export function ProjectsWindow() {
             >
               Close [ESC]
             </button>
-            <img src={previewImg} alt="Preview" className="w-full h-auto max-h-[85vh] object-contain rounded-xl" />
+            <Image
+              src={previewImg}
+              alt="Preview"
+              fill
+              unoptimized
+              sizes="100vw"
+              className="object-contain p-2 rounded-xl"
+            />
           </div>
         </div>,
         document.body

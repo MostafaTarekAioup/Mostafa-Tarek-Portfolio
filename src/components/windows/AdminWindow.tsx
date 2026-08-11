@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useOS } from "@/context/OSContext";
+import NextImage from "next/image";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -26,7 +27,8 @@ import {
   LogOut,
   ExternalLink,
   KeyRound,
-  UserCheck
+  UserCheck,
+  Pin
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -49,6 +51,8 @@ interface Project {
   tools?: string;
   description?: string;
   images?: string;
+  isPinned?: boolean;
+  pinOrder?: number;
 }
 
 const tryParseJsonArray = (str?: string): string[] => {
@@ -306,6 +310,8 @@ export function AdminWindow() {
       images: typeof editingProject.images === "string"
         ? tryParseJsonArray(editingProject.images)
         : editingProject.images || (editingProject.imgUrl ? [editingProject.imgUrl] : []),
+      isPinned: editingProject.isPinned === true,
+      pinOrder: Number(editingProject.pinOrder) || 0,
     };
 
     try {
@@ -346,6 +352,40 @@ export function AdminWindow() {
       }
     } catch (err) {
       console.error("Error deleting project:", err);
+    }
+  };
+
+  const handleTogglePin = async (proj: Project) => {
+    const newPinned = !proj.isPinned;
+    // If pinning, check if already 3 pinned
+    if (newPinned) {
+      const pinnedCount = projects.filter(p => p.isPinned).length;
+      if (pinnedCount >= 3) {
+        showNotification("⚠️ Maximum 3 pinned projects allowed! Unpin one first.");
+        return;
+      }
+    }
+    try {
+      const res = await fetch("/api/projects", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("admin_token") || ""}`,
+        },
+        body: JSON.stringify({
+          id: proj.id,
+          isPinned: newPinned,
+          pinOrder: newPinned ? (projects.filter(p => p.isPinned).length + 1) : 0,
+        }),
+      });
+      if (res.ok) {
+        showNotification(newPinned ? "📌 Project pinned to Featured!" : "Project unpinned from Featured.");
+        loadData();
+      } else {
+        showNotification("Error: Failed to update pin status!");
+      }
+    } catch (err) {
+      console.error("Error toggling pin:", err);
     }
   };
 
@@ -714,18 +754,24 @@ export function AdminWindow() {
             {filteredProjects.map((proj) => (
               <div
                 key={proj.id}
-                className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-purple-500/50 transition duration-200 shadow-lg group"
+                className={`bg-slate-900/80 border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition duration-200 shadow-lg group ${proj.isPinned ? 'border-cyan-500/50 shadow-cyan-500/10 bg-cyan-950/20' : 'border-slate-800/90 hover:border-purple-500/50'}`}
               >
                 <div className="flex items-center space-x-3.5 overflow-hidden w-full sm:w-auto">
                   <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shrink-0">
-                    <img src={proj.imgUrl} alt={proj.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                    <div className="absolute top-1 left-1 px-1.5 py-0.2 bg-black/80 rounded text-[9px] font-mono text-purple-300">
+                    <NextImage src={proj.imgUrl || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"} alt={proj.title} fill sizes="64px" className="object-cover group-hover:scale-105 transition duration-300" />
+                    <div className="absolute top-1 left-1 px-1.5 py-0.2 bg-black/80 rounded text-[9px] font-mono text-purple-300 z-10">
                       #{proj.id}
                     </div>
                   </div>
                   <div className="truncate flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-sm sm:text-base text-white truncate">{proj.title}</span>
+                      {proj.isPinned && (
+                        <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0 flex items-center gap-1">
+                          <Pin className="w-2.5 h-2.5" />
+                          PINNED
+                        </span>
+                      )}
                       <a
                         href={proj.liveLink}
                         target="_blank"
@@ -746,6 +792,17 @@ export function AdminWindow() {
                 </div>
 
                 <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                  <button
+                    onClick={() => handleTogglePin(proj)}
+                    className={`p-2 rounded-xl transition border active:scale-95 ${
+                      proj.isPinned
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/30 shadow-sm shadow-cyan-500/20'
+                        : 'bg-slate-800/80 text-slate-400 border-slate-700/80 hover:bg-cyan-500/10 hover:text-cyan-300'
+                    }`}
+                    title={proj.isPinned ? "Unpin from Featured" : "Pin to Featured"}
+                  >
+                    <Pin className="w-3.5 h-3.5" />
+                  </button>
                   <button
                     onClick={() => setEditingProject(proj)}
                     className="px-3 py-2 bg-slate-800/80 hover:bg-purple-500/20 text-slate-200 hover:text-purple-300 rounded-xl transition border border-slate-700/80 text-xs font-bold flex items-center gap-1.5 active:scale-95"
@@ -1065,7 +1122,7 @@ export function AdminWindow() {
                       <div className="flex flex-wrap gap-2.5 mt-3 p-3 bg-slate-950/80 rounded-2xl border border-slate-800/80 max-h-[160px] overflow-y-auto no-scrollbar">
                         {imgs.map((url, idx) => (
                           <div key={idx} className="relative group w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-slate-700/80 shrink-0 shadow-md">
-                            <img src={url} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                            <NextImage src={url} alt={`Preview ${idx}`} fill sizes="80px" className="object-cover" />
                             <button
                               type="button"
                               onClick={() => {
@@ -1144,6 +1201,42 @@ export function AdminWindow() {
                     />
                   </div>
                 </div>
+
+                {/* Pin to Featured Toggle */}
+                <div className="flex items-center justify-between p-3 bg-slate-950/80 rounded-xl border border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <Pin className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <span className="text-xs font-bold text-white">Pin to Featured</span>
+                      <p className="text-[10px] text-slate-400">Show this project on the desktop widget</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingProject({ ...editingProject, isPinned: !(editingProject as Project).isPinned })}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                      (editingProject as Project).isPinned ? 'bg-cyan-500' : 'bg-slate-700'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      (editingProject as Project).isPinned ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+
+                {(editingProject as Project).isPinned && (
+                  <div>
+                    <label className="block text-xs text-slate-300 mb-1.5 font-bold">Display Order (1-3)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      value={(editingProject as Project).pinOrder || 1}
+                      onChange={(e) => setEditingProject({ ...editingProject, pinOrder: Number(e.target.value) })}
+                      className="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Modal Footer */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { useOS } from "@/context/OSContext";
 import {
   User,
@@ -53,14 +54,12 @@ export function AboutWindow() {
         <div className="relative mb-4 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-500 animate-pulse-slow" />
           <div className="relative w-36 h-36 rounded-full overflow-hidden border-2 border-slate-800 bg-slate-950">
-            <img
+            <Image
               src={"/images/MyPersonalImage.jpg"}
               alt={profile?.name || "Mostafa Tarek"}
-              className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80";
-              }}
+              fill
+              sizes="144px"
+              className="object-cover group-hover:scale-105 transition duration-500"
             />
           </div>
           <div className="absolute bottom-2 right-2 flex items-center bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-mono shadow-lg backdrop-blur-md">

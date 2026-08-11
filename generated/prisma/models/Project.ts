@@ -28,10 +28,12 @@ export type AggregateProject = {
 
 export type ProjectAvgAggregateOutputType = {
   id: number | null
+  pinOrder: number | null
 }
 
 export type ProjectSumAggregateOutputType = {
   id: number | null
+  pinOrder: number | null
 }
 
 export type ProjectMinAggregateOutputType = {
@@ -43,6 +45,8 @@ export type ProjectMinAggregateOutputType = {
   tools: string | null
   description: string | null
   images: string | null
+  isPinned: boolean | null
+  pinOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type ProjectMaxAggregateOutputType = {
   tools: string | null
   description: string | null
   images: string | null
+  isPinned: boolean | null
+  pinOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,6 +75,8 @@ export type ProjectCountAggregateOutputType = {
   tools: number
   description: number
   images: number
+  isPinned: number
+  pinOrder: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -77,10 +85,12 @@ export type ProjectCountAggregateOutputType = {
 
 export type ProjectAvgAggregateInputType = {
   id?: true
+  pinOrder?: true
 }
 
 export type ProjectSumAggregateInputType = {
   id?: true
+  pinOrder?: true
 }
 
 export type ProjectMinAggregateInputType = {
@@ -92,6 +102,8 @@ export type ProjectMinAggregateInputType = {
   tools?: true
   description?: true
   images?: true
+  isPinned?: true
+  pinOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -105,6 +117,8 @@ export type ProjectMaxAggregateInputType = {
   tools?: true
   description?: true
   images?: true
+  isPinned?: true
+  pinOrder?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -118,6 +132,8 @@ export type ProjectCountAggregateInputType = {
   tools?: true
   description?: true
   images?: true
+  isPinned?: true
+  pinOrder?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -218,6 +234,8 @@ export type ProjectGroupByOutputType = {
   tools: string
   description: string
   images: string
+  isPinned: boolean
+  pinOrder: number
   createdAt: Date
   updatedAt: Date
   _count: ProjectCountAggregateOutputType | null
@@ -254,6 +272,8 @@ export type ProjectWhereInput = {
   tools?: Prisma.StringFilter<"Project"> | string
   description?: Prisma.StringFilter<"Project"> | string
   images?: Prisma.StringFilter<"Project"> | string
+  isPinned?: Prisma.BoolFilter<"Project"> | boolean
+  pinOrder?: Prisma.IntFilter<"Project"> | number
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
 }
@@ -267,6 +287,8 @@ export type ProjectOrderByWithRelationInput = {
   tools?: Prisma.SortOrder
   description?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -283,6 +305,8 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   tools?: Prisma.StringFilter<"Project"> | string
   description?: Prisma.StringFilter<"Project"> | string
   images?: Prisma.StringFilter<"Project"> | string
+  isPinned?: Prisma.BoolFilter<"Project"> | boolean
+  pinOrder?: Prisma.IntFilter<"Project"> | number
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
 }, "id">
@@ -296,6 +320,8 @@ export type ProjectOrderByWithAggregationInput = {
   tools?: Prisma.SortOrder
   description?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
@@ -317,6 +343,8 @@ export type ProjectScalarWhereWithAggregatesInput = {
   tools?: Prisma.StringWithAggregatesFilter<"Project"> | string
   description?: Prisma.StringWithAggregatesFilter<"Project"> | string
   images?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  isPinned?: Prisma.BoolWithAggregatesFilter<"Project"> | boolean
+  pinOrder?: Prisma.IntWithAggregatesFilter<"Project"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
 }
@@ -330,6 +358,8 @@ export type ProjectCreateInput = {
   tools?: string
   description?: string
   images?: string
+  isPinned?: boolean
+  pinOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -343,6 +373,8 @@ export type ProjectUncheckedCreateInput = {
   tools?: string
   description?: string
   images?: string
+  isPinned?: boolean
+  pinOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -356,6 +388,8 @@ export type ProjectUpdateInput = {
   tools?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.StringFieldUpdateOperationsInput | string
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +403,8 @@ export type ProjectUncheckedUpdateInput = {
   tools?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.StringFieldUpdateOperationsInput | string
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -382,6 +418,8 @@ export type ProjectCreateManyInput = {
   tools?: string
   description?: string
   images?: string
+  isPinned?: boolean
+  pinOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -395,6 +433,8 @@ export type ProjectUpdateManyMutationInput = {
   tools?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.StringFieldUpdateOperationsInput | string
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -408,6 +448,8 @@ export type ProjectUncheckedUpdateManyInput = {
   tools?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   images?: Prisma.StringFieldUpdateOperationsInput | string
+  isPinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pinOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,12 +463,15 @@ export type ProjectCountOrderByAggregateInput = {
   tools?: Prisma.SortOrder
   description?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ProjectAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
 }
 
 export type ProjectMaxOrderByAggregateInput = {
@@ -438,6 +483,8 @@ export type ProjectMaxOrderByAggregateInput = {
   tools?: Prisma.SortOrder
   description?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -451,12 +498,15 @@ export type ProjectMinOrderByAggregateInput = {
   tools?: Prisma.SortOrder
   description?: Prisma.SortOrder
   images?: Prisma.SortOrder
+  isPinned?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ProjectSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  pinOrder?: Prisma.SortOrder
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -469,6 +519,10 @@ export type IntFieldUpdateOperationsInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -486,6 +540,8 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   tools?: boolean
   description?: boolean
   images?: boolean
+  isPinned?: boolean
+  pinOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -499,6 +555,8 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   tools?: boolean
   description?: boolean
   images?: boolean
+  isPinned?: boolean
+  pinOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -512,6 +570,8 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   tools?: boolean
   description?: boolean
   images?: boolean
+  isPinned?: boolean
+  pinOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -525,11 +585,13 @@ export type ProjectSelectScalar = {
   tools?: boolean
   description?: boolean
   images?: boolean
+  isPinned?: boolean
+  pinOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "imgUrl" | "liveLink" | "tags" | "tools" | "description" | "images" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "imgUrl" | "liveLink" | "tags" | "tools" | "description" | "images" | "isPinned" | "pinOrder" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 
 export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Project"
@@ -543,6 +605,8 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     tools: string
     description: string
     images: string
+    isPinned: boolean
+    pinOrder: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["project"]>
@@ -976,6 +1040,8 @@ export interface ProjectFieldRefs {
   readonly tools: Prisma.FieldRef<"Project", 'String'>
   readonly description: Prisma.FieldRef<"Project", 'String'>
   readonly images: Prisma.FieldRef<"Project", 'String'>
+  readonly isPinned: Prisma.FieldRef<"Project", 'Boolean'>
+  readonly pinOrder: Prisma.FieldRef<"Project", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
 }
