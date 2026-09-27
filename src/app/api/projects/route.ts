@@ -4,7 +4,7 @@ import { verifyAdminRequest } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({ orderBy: { id: "desc" } });
+    const projects = await prisma.project.findMany({ orderBy: [{ isPinned: "desc" }, { pinOrder: "asc" }, { id: "desc" }] });
     return NextResponse.json(projects);
   } catch {
     return NextResponse.json({ error: "Failed to fetch projects" }, { status: 500 });
@@ -32,6 +32,8 @@ export async function POST(request: Request) {
         tools: typeof body.tools === "string" ? body.tools : JSON.stringify(body.tools || []),
         description: body.description || "",
         images: typeof body.images === "string" ? body.images : JSON.stringify(body.images || [body.imgUrl || "https://i.ibb.co/CPrHNtZ/b1.webp"]),
+        isPinned: body.isPinned === true,
+        pinOrder: Number(body.pinOrder) || 0,
       },
     });
     return NextResponse.json(project, { status: 201 });
@@ -56,6 +58,8 @@ export async function PUT(request: Request) {
         tools: data.tools ? (typeof data.tools === "string" ? data.tools : JSON.stringify(data.tools)) : undefined,
         description: data.description !== undefined ? data.description : undefined,
         images: data.images ? (typeof data.images === "string" ? data.images : JSON.stringify(data.images)) : undefined,
+        isPinned: data.isPinned !== undefined ? data.isPinned === true : undefined,
+        pinOrder: data.pinOrder !== undefined ? Number(data.pinOrder) : undefined,
       },
     });
     return NextResponse.json(project);

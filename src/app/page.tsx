@@ -15,6 +15,7 @@ import { AdminWindow } from "@/components/windows/AdminWindow";
 import { TerminalWindow } from "@/components/windows/TerminalWindow";
 import { FindMeWindow } from "@/components/windows/FindMeWindow";
 import { FuturisticBackground } from "@/components/desktop/FuturisticBackground";
+import { FeaturedProjectsWidget } from "@/components/desktop/FeaturedProjectsWidget";
 
 import {
   UserCircle,
@@ -40,6 +41,9 @@ export default function Home() {
       <div className="relative h-[calc(100vh-2.25rem)] w-full">
         {/* Clickable Desktop Icons Grid */}
         <DesktopShortcuts />
+
+        {/* Featured Projects Desktop Widget */}
+        <FeaturedProjectsWidget />
 
         {/* Windows */}
         <OSWindow

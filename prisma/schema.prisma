@@ -16,6 +16,8 @@ model Project {
   tools       String   @default("[]") // JSON array of strings e.g. '["react", "jsx"]'
   description String   @default("")
   images      String   @default("[]") // JSON array of image strings
+  isPinned    Boolean  @default(false)
+  pinOrder    Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

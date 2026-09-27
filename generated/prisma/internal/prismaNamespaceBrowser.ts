@@ -84,6 +84,8 @@ export const ProjectScalarFieldEnum = {
   tools: 'tools',
   description: 'description',
   images: 'images',
+  isPinned: 'isPinned',
+  pinOrder: 'pinOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
